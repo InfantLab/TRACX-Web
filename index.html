@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame 
+       Remove this if you use the .htaccess -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+  <title>TRACX Online Simulator</title>
+  <meta name="description" content="" />
+  <meta name="author" content="Caspar Addyman" />
+
+  <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  
+  <!-- The javascript libraries we will use -->
+  <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js?ver=1.6.4'></script>
+</head>
+
+<body>
+  <div>
+    <header>
+      <h1>TRACX simulator</h1>
+    </header>
+    <nav>
+      <p><a href="/">Home</a></p>
+      <p><a href="/contact">Contact</a></p>
+    </nav>
+<br/>
+Step 1<br>
+    <fieldset>
+        <legend>Choose data file:</legend>
+     <input type="file" id="files" name="files[]" multiple />
+<output id="learningstring"></output>
+<textarea id="learningData" name="learningData" class="required" rows="5" cols="50"></textarea>
+</fieldset>
+<script>  
+	//function to load the data from a file on the computer
+	  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+	// Loop through the FileList and save load.
+	for (var i = 0, f; f = files[i]; i++) {
+
+      var reader = new FileReader();
+
+      // Closure to capture the file information.
+      reader.onload = (function(theFile) {
+        return function(e) {
+        console.log(theFile.name);
+        console.log('reader.onload e.target.result:' + e.target.result);
+        $("output#list").append(theFile.name);        $("textarea#learningData").append(e.target.result);
+    };
+      })(f);
+
+      // Read in the image file as a data URL.
+      reader.readAsText(f);
+    }
+	  
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        var reader = new FileReader();</script>
+Step 2
+<form id="myForm" action="/echo/html/" method="post">
+    <fieldset>
+        <legend>Network Parameters</legend>
+        <table>
+            <tr>
+                <td>Learning Rate</td><td> <input type="text" name="learnrate" class="required" title="Learning Rate" value="0.04"/></td></tr>
+            <tr>
+                <td>Recognition Criterion</td><td><input type="text" name="criterion" class="required" title="Criterion" value="0.3"/></td></tr>
+            <tr>
+                <td>Reinforcement Threshold </td><td><input type="text" name="threshold" class="required" title="Reinforcement Threshold" value="0.25"/></td></tr>
+            <tr>
+                <td>Momentum </td><td><input type="text" name="momentum" class="required" title="Momentum" value="0.0"/></td></tr>
+            <tr>
+                <td>Number of subjects</td><td><input type="text" name="numbersubjects" class="required" title="NumberSubjects" value="1"/></td></tr>
+            <tr>
+                <td>Temperature</td><td><input type="text" name="temperature" class="required" title="Temperature" value="1"/></td></tr>
+            <tr>
+                <td>Fahlman Offset</td><td><input type="text" name="fahlmanoffset" class="required" title="Fahlman Offset" value="0.1"/></td></tr>
+            <tr>
+                <td>Bias value</td><td><input type="text" name="bias" class="required" title="Bias" value="-1"/>
+                    </td></tr>
+                </table>
+
+            <ul>
+             <li>Notes:<br/><textarea id="myMessage" name="message" class="required" title="Message" rows="5" cols="30"></textarea></li>
+            <li>
+                <label>Would you like to graph results</label>
+                <input type="radio" id="news_y" name="newsletter" />
+                <label for="news_y">Yes</label>
+                <input type="radio" id="news_n" name="newsletter" class="validate-one-required" />
+                <label for="news_n">No</label>
+            </li>
+        </ul>
+    </fieldset>
+    <div><input type="calculate" value="params" /></div>
+</form>
+<div id="myResult"></div>
+    <footer>
+     <p>&copy; Copyright  by Caspar Addyman</p>
+    </footer>
+  </div>
+</body>
+</html>
