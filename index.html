@@ -20,6 +20,7 @@
   
   <!-- The javascript libraries we will use -->
   <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js?ver=1.6.4'></script>
+  <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/dojo/1.6.1/dojo/dojo.xd.js'></script>
 </head>
 
 <body>
@@ -27,17 +28,50 @@
     <header>
       <h1>TRACX simulator</h1>
     </header>
-    <nav>
-      <p><a href="/">Home</a></p>
-      <p><a href="/contact">Contact</a></p>
-    </nav>
-<br/>
-Step 1<br>
     <fieldset>
-        <legend>Choose data file:</legend>
+        <legend>Step 1 - Choose data file:</legend>
+        <input type="radio" id="stored" name="dataselection" />
+        <label for="stored">Existing dataset</label>
+        <select id="simulationdata">
+        	<option>1. Saffran et al., 1996</option>
+        	<option>2. Aslin et al., 1998</option>
+        	<option>3. Perruchet &amp; Desaulty, 2008 (Forward TPs)</option>
+        	<option>4. Perruchet &amp; Desaulty, 2008 (Backward TPs)</option>
+        	<option>5. Giroux &amp; Rey, 2009</option>
+        	<option>6. Frank et al., 2010 -  Experiment 1</option>
+        	<option>7. Frank et al., 2010 -  Experiment 3</option>
+        	<option>8. Brent &amp; Cartwright, 1996,</option>
+        	<option>9 &amp; 10 - Not available </option>
+        	<option>11. French, Addyman &amp; Mareschal, 2011 </option>
+        </select>        
+                <input type="radio" id="userinput" name="dataselection" class="validate-one-required" />
+                <label for="news_n">User selection</label>
      <input type="file" id="files" name="files[]" multiple />
 <output id="learningstring"></output>
 <textarea id="learningData" name="learningData" class="required" rows="5" cols="50"></textarea>
+<div id="debug">Debug messages</div>
+<script>
+	//add an event to fetch simulation data from the website
+ 	$('#simulationdata').change(function(){
+		sendValue($(this).val());	
+	});
+	
+	function sendValue(str){
+		$.post("ajax.php", { sendToValue: str },
+		function(data){
+		    $('#debug').html(data.returnFromValue);
+		}, "json");
+	}
+</script>
+
+<table dojoType="dojox.grid.DataGrid" >
+  <thead>
+    <tr>
+      <th field="fieldName" width="200px">Syllable</th>
+      <th field="fieldName" width="200px">Encoding</th>
+    </tr>
+  </thead>
+</table>
 </fieldset>
 <script>  
 	//function to load the data from a file on the computer
@@ -48,13 +82,15 @@ Step 1<br>
 	for (var i = 0, f; f = files[i]; i++) {
 
       var reader = new FileReader();
+		
 
       // Closure to capture the file information.
       reader.onload = (function(theFile) {
         return function(e) {
         console.log(theFile.name);
         console.log('reader.onload e.target.result:' + e.target.result);
-        $("output#list").append(theFile.name);        $("textarea#learningData").append(e.target.result);
+        $("output#list").append(theFile.name);       
+        $("textarea#learningData").append(e.target.result);
     };
       })(f);
 
@@ -66,29 +102,32 @@ Step 1<br>
 
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
         var reader = new FileReader();</script>
-Step 2
-<form id="myForm" action="/echo/html/" method="post">
+
     <fieldset>
-        <legend>Network Parameters</legend>
-        <table>
+        <legend>Step 2: Set Network Parameters</legend>
+        <table summary="Network Parameters">
             <tr>
-                <td>Learning Rate</td><td> <input type="text" name="learnrate" class="required" title="Learning Rate" value="0.04"/></td></tr>
+                <td>Learning Rate</td>
+                <td> <input type="text" id="learnrate" class="required" title="Learning Rate" value="0.04"/></td>
+            </tr><tr>
+                <td>Recognition Criterion</td>
+                <td><input type="text" id="criterion" class="required" title="Criterion" value="0.3"/></td></tr>
             <tr>
-                <td>Recognition Criterion</td><td><input type="text" name="criterion" class="required" title="Criterion" value="0.3"/></td></tr>
+                <td>Reinforcement Threshold</td>
+                <td><input type="text" id="threshold" class="required" title="Reinforcement Threshold" value="0.25"/></td></tr>
             <tr>
-                <td>Reinforcement Threshold </td><td><input type="text" name="threshold" class="required" title="Reinforcement Threshold" value="0.25"/></td></tr>
+                <td>Momentum </td><td><input type="text" id="momentum" class="required" title="Momentum" value="0.0"/></td></tr>
             <tr>
-                <td>Momentum </td><td><input type="text" name="momentum" class="required" title="Momentum" value="0.0"/></td></tr>
+                <td>Number of subjects</td><td><input type="text" id="numbersubjects" class="required" title="NumberSubjects" value="1"/></td></tr>
             <tr>
-                <td>Number of subjects</td><td><input type="text" name="numbersubjects" class="required" title="NumberSubjects" value="1"/></td></tr>
+                <td>Temperature</td><td><input type="text" id="temperature" class="required" title="Temperature" value="1"/></td></tr>
             <tr>
-                <td>Temperature</td><td><input type="text" name="temperature" class="required" title="Temperature" value="1"/></td></tr>
+                <td>Fahlman Offset</td><td><input type="text" id="fahlmanoffset" class="required" title="Fahlman Offset" value="0.1"/></td></tr>
             <tr>
-                <td>Fahlman Offset</td><td><input type="text" name="fahlmanoffset" class="required" title="Fahlman Offset" value="0.1"/></td></tr>
-            <tr>
-                <td>Bias value</td><td><input type="text" name="bias" class="required" title="Bias" value="-1"/>
-                    </td></tr>
-                </table>
+                <td>Bias value</td>
+                <td><input type="text" id="bias" class="required" title="Bias" value="-1"/></td>
+            </tr>
+        </table>
 
             <ul>
              <li>Notes:<br/><textarea id="myMessage" name="message" class="required" title="Message" rows="5" cols="30"></textarea></li>
@@ -101,11 +140,25 @@ Step 2
             </li>
         </ul>
     </fieldset>
-    <div><input type="calculate" value="params" /></div>
-</form>
+        <fieldset>
+        <legend>Step 2: Set Network Parameters</legend>
+<div><input type="button" id="calculate" value="Calculate.." /></div>
+ 
 <div id="myResult"></div>
+</fieldset>
+<script type="text/javascript">  
+	//function to load the data from a file on the computer
+	function handleCalculate(evt) {
+ 		console.log('handleCalculate');	
+        console.log('learnrate:' + $('#learnrate').val());
+        // $("output#list").append(theFile.name);       
+	    }
+	//add a click event to the calculate button
+ 	$('#calculate').click(handleCalculate);
+      
+</script>
     <footer>
-     <p>&copy; Copyright  by Caspar Addyman</p>
+     <p>&copy; Caspar Addyman, 2011</p>
     </footer>
   </div>
 </body>
