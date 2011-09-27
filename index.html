@@ -10,9 +10,7 @@
   <title>TRACX Online Simulator</title>
   <meta name="description" content="" />
   <meta name="author" content="Caspar Addyman" />
-
   <meta name="viewport" content="width=device-width; initial-scale=1.0" />
-
   <link rel="stylesheet" href="style.css" type="text/css" />
   <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -20,145 +18,366 @@
   
   <!-- The javascript libraries we will use -->
   <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js?ver=1.6.4'></script>
-  <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/dojo/1.6.1/dojo/dojo.xd.js'></script>
+  <script type='text/javascript' src='lib/jquery.jqplot.min.js'></script>
+  <link rel="stylesheet" href="lib/jquery.jqplot.min.css" type="text/css" />
+  <script type='text/javascript' src='lib/plugins/jqplot.barRenderer.min.js'></script>
+  <script type='text/javascript' src='lib/plugins/jqplot.categoryAxisRenderer.min.js'></script>
+  <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
+  <script type='text/javascript' src='lib//jquery.qtip-1.0.0-rc3.min.js'></script>
+  <script type='text/javascript' src='lib/sylvester.js'></script>
+ 
+  <!-- The TRACX simulator itself --> 
+  <script type='text/javascript' src='tracx.js'></script>
 </head>
 
 <body>
   <div>
     <header>
-      <h1>TRACX simulator</h1>
+      <h1>TRACX simulator</h1> 
     </header>
-    <fieldset>
-        <legend>Step 1 - Choose data file:</legend>
-        <input type="radio" id="stored" name="dataselection" />
-        <label for="stored">Existing dataset</label>
-        <select id="simulationdata">
+    <form id="LearnParams">
+    	<fieldset><legend>Step 1 - Choose data:</legend>
+    	<h3>Training data</h3>
+    	<label for="stored">Existing dataset</label>
+        <select id="simulationSelect">
         	<option>1. Saffran et al., 1996</option>
         	<option>2. Aslin et al., 1998</option>
         	<option>3. Perruchet &amp; Desaulty, 2008 (Forward TPs)</option>
         	<option>4. Perruchet &amp; Desaulty, 2008 (Backward TPs)</option>
-        	<option>5. Giroux &amp; Rey, 2009</option>
-        	<option>6. Frank et al., 2010 -  Experiment 1</option>
-        	<option>7. Frank et al., 2010 -  Experiment 3</option>
-        	<option>8. Brent &amp; Cartwright, 1996,</option>
+        	<option>5. #NA# Giroux &amp; Rey, 2009</option>
+        	<option>6. #NA# Frank et al., 2010 -  Experiment 1</option>
+        	<option>7. #NA# Frank et al., 2010 -  Experiment 3</option>
+        	<option>8. #NA# Brent &amp; Cartwright, 1996,</option>
         	<option>9 &amp; 10 - Not available </option>
         	<option>11. French, Addyman &amp; Mareschal, 2011 </option>
+        	<option selected="selected">12. Kirkham,Slemmer &amp; Johnson, 2012 </option>
+        	
         </select>        
-                <input type="radio" id="userinput" name="dataselection" class="validate-one-required" />
-                <label for="news_n">User selection</label>
-     <input type="file" id="files" name="files[]" multiple />
-<output id="learningstring"></output>
-<textarea id="learningData" name="learningData" class="required" rows="5" cols="50"></textarea>
-<div id="debug">Debug messages</div>
-<script>
-	//add an event to fetch simulation data from the website
- 	$('#simulationdata').change(function(){
-		sendValue($(this).val());	
-	});
-	
-	function sendValue(str){
-		$.post("ajax.php", { sendToValue: str },
-		function(data){
-		    $('#debug').html(data.returnFromValue);
-		}, "json");
-	}
-</script>
-
-<table dojoType="dojox.grid.DataGrid" >
-  <thead>
-    <tr>
-      <th field="fieldName" width="200px">Syllable</th>
-      <th field="fieldName" width="200px">Encoding</th>
-    </tr>
-  </thead>
-</table>
+        <label for="dataselection">Or select file</label>
+     <input type="file" id="userDataFiles" multiple />
+<output id="trainingstring"></output><br/>
+<textarea id="trainingData" class="required" rows="5" cols="60">abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef</textarea><br/>
+<em>Each training sentence should begin on a new line.</em>
+<h3>Test items</h3>
+<table><tr>
+	<td>Words:</td>
+	<td><textarea id="testWords" class="required" rows="1" cols="50">ab,cd,ef</textarea></td>
+</tr><tr>
+	<td>Part Words:</td>
+	<td><textarea id="testPartWords"  rows="1" cols="50">bc,de,fa</textarea></td>
+</tr><tr>
+	<td>Non Words:</td>
+	<td><textarea id="testNonWords" rows="1" cols="50">ba,dc,fe</textarea></td>
+</tr>
+</table><br/>
+<em>Test items should be seperated by commas.</em>
+<div id="debug"></div>
 </fieldset>
-<script>  
-	//function to load the data from a file on the computer
-	  function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
-
-	// Loop through the FileList and save load.
-	for (var i = 0, f; f = files[i]; i++) {
-
-      var reader = new FileReader();
-		
-
-      // Closure to capture the file information.
-      reader.onload = (function(theFile) {
-        return function(e) {
-        console.log(theFile.name);
-        console.log('reader.onload e.target.result:' + e.target.result);
-        $("output#list").append(theFile.name);       
-        $("textarea#learningData").append(e.target.result);
-    };
-      })(f);
-
-      // Read in the image file as a data URL.
-      reader.readAsText(f);
-    }
-	  
-  }
-
-  document.getElementById('files').addEventListener('change', handleFileSelect, false);
-        var reader = new FileReader();</script>
-
-    <fieldset>
+    <fieldset id="paramsform">
         <legend>Step 2: Set Network Parameters</legend>
         <table summary="Network Parameters">
             <tr>
                 <td>Learning Rate</td>
-                <td> <input type="text" id="learnrate" class="required" title="Learning Rate" value="0.04"/></td>
+                <td> <input type="text" id="learningRate" class="required"  value="0.04"/></td>
             </tr><tr>
                 <td>Recognition Criterion</td>
-                <td><input type="text" id="criterion" class="required" title="Criterion" value="0.3"/></td></tr>
+                <td><input type="text" id="recognitionCriterion" class="required"  value="0.3"/></td></tr>
             <tr>
                 <td>Reinforcement Threshold</td>
-                <td><input type="text" id="threshold" class="required" title="Reinforcement Threshold" value="0.25"/></td></tr>
+                <td><input type="text" id="reinforcementThreshold" class="required" value="0.25"/></td></tr>
             <tr>
-                <td>Momentum </td><td><input type="text" id="momentum" class="required" title="Momentum" value="0.0"/></td></tr>
+                <td>Momentum </td><td><input type="text" id="momentum" class="required" value="0.0"/></td></tr>
             <tr>
-                <td>Number of subjects</td><td><input type="text" id="numbersubjects" class="required" title="NumberSubjects" value="1"/></td></tr>
+                <td>Sentence repetitions</td><td><input type="text" id="sentenceRepetitions" class="required" value="1"/></td></tr>
             <tr>
-                <td>Temperature</td><td><input type="text" id="temperature" class="required" title="Temperature" value="1"/></td></tr>
+                <td>Number of subjects</td><td><input type="text" id="numberSubjects" class="required" value="1"/></td></tr>
             <tr>
-                <td>Fahlman Offset</td><td><input type="text" id="fahlmanoffset" class="required" title="Fahlman Offset" value="0.1"/></td></tr>
+                <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td></tr>
+            <tr>
+                <td>Fahlman Offset</td><td><input type="text" id="fahlmanOffset" class="required" value="0.1"/></td></tr>
             <tr>
                 <td>Bias value</td>
                 <td><input type="text" id="bias" class="required" title="Bias" value="-1"/></td>
             </tr>
         </table>
+	</fieldset>
+    </form>
+    <fieldset>
+        <legend>Step 3: Run Simulator</legend>	
+		<input type="button" id="calculate" value="Calculate.." />
+    	<input type="checkbox" id="graphResults" checked="checked"/> Graph results<br/>
+		<div id="myResult"></div>
+		<fieldset><legend>Graphic Output</legend>	
+	<div id="chart1" style="height:400px;width:800px; "></div>
+	</fieldset>
+	</fieldset>
 
-            <ul>
-             <li>Notes:<br/><textarea id="myMessage" name="message" class="required" title="Message" rows="5" cols="30"></textarea></li>
-            <li>
-                <label>Would you like to graph results</label>
-                <input type="radio" id="news_y" name="newsletter" />
-                <label for="news_y">Yes</label>
-                <input type="radio" id="news_n" name="newsletter" class="validate-one-required" />
-                <label for="news_n">No</label>
-            </li>
-        </ul>
-    </fieldset>
-        <fieldset>
-        <legend>Step 2: Set Network Parameters</legend>
-<div><input type="button" id="calculate" value="Calculate.." /></div>
- 
-<div id="myResult"></div>
-</fieldset>
-<script type="text/javascript">  
+		
+<script type='text/javascript'>
+	//things to do once document has finished loading
+	$(document).ready(function() 
+	{
+		/******************************************************
+		 * SOME HELP AND DESCRIPTION OF INPUTS AND PARAMETERS *
+		 * APPEARS AS 'TOOLTIPS' WHEN USER HOVERS MOUSE OVER  *
+		 * FIELDS OR BUTTONS                                  *
+		 ******************************************************/
+	   	$('#simulationSelect').qtip({
+	    	content: 'Click to select preset data.',
+	    	style: 'cream'
+		});
+	   	$('#trainingData').qtip({
+	    	content: 'Training Data<br/>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are seperated by carriage returns.',
+	    	style: 'cream'
+		});
+	   	$('#testWords').qtip({
+	    	content: 'Words from the training corpus. The trained network is tested for it\'s output error for each word individually. Words are seperated by commas.',
+	    	style: 'cream'
+		});
+	   	$('#testPartWords').qtip({
+	    	content: 'Sequences of tokens encountered during training but which cross notional word boundaries.',
+	    	style: 'cream'
+		});
+	   	$('#testNonWords').qtip({
+	    	content: 'Sequences of tokens that were not encountered during training.',
+	    	style: 'cream'
+		});
+	   	$('#learningRate').qtip({
+	    	content: 'By how much do we adjust the weight matrices on each cycle of backpropogation.<br/><em>Defaults:<br/>Artificial grammar: 0.04<br/>Real world corpus: 0.004</em>',
+	    	style: 'cream'
+		});
+		$('#recognitionCriterion').qtip({
+	    	content: 'Maximum output error must be below this value for all nodes before network is deemed to recognise an input pair. When an input pair is recognised the hidden unit activations are passed back as an input for the next step.<br/><em>Default: 0.3</em>',
+	    	style: 'cream'
+		});
+		$('#reinforcementThreshold').qtip({
+	    	content: 'Learning is weaker for hidden representations. Therefore we only backpropogate errors this proportion of the time (determined probablistically by <em>Math.random() < ReinforcementThreshold</em>) .<br/><em>Default: 0.25</em>',
+	    	style: 'cream'
+		});
+		$('#momentum').qtip({
+	    	content: 'Standard backpropogation momentum parameter.<br/><em>Default: 0.0</em>',
+	    	style: 'cream'
+		});
+		$('#sentenceRepetitions').qtip({
+	    	content: 'How often do we repeat each sentence/utterance in the learning corpus.<br/><em>Default: 6</em>',
+	    	style: 'cream'
+		});
+		$('#numberSubjects').qtip({
+	    	content: '<em>Not yet implemented!</em><br/>How many times do we run the full simulation and test?<br/><em>Default: 1</em>',
+	    	style: 'cream'
+		});
+		$('#temperature').qtip({
+	    	content: 'What is the slope of the hyperbolic tanget activation function?<br/><em>Default: 1</em>',
+	    	style: 'cream'
+		});
+		$('#fahlmanOffset').qtip({
+	    	content: 'The Fahlman offset speeds up learning. It is discussed in<br/><font size="small">Fahlman, S. E. (1988). Faster-learning variations on back-propagation: An empirical study. In D. S. Touretzky, G. E. Hinton, & T. J. Sejnowski (Eds.), Proceedings of the 1988 Connectionist Models Summer School (pp. 38-51). Los Altos, CA: Morgan Kaufmann</font><br/><em>Default: 0.04</em>',
+	    	style: 'cream'
+		});
+		$('#bias').qtip({
+	    	content: 'Bias node activation - An node with this activation is always added to the set of inputs and to the set of hidden units.<br/><em>Default: -1</em>',
+	    	style: 'cream'
+		});
+		$('#calculate').qtip({
+	    	content: 'For each subject we create a new untrained network by randomly initialising a new set of weights matrices. We train this network on the training data and then test with each of the word, part-word and non-word stimuli. Progress is shown below and mean results are plotted graphically.',
+	    	style: 'cream'
+		});
+	});
+	function sendValue(str){
+		$.post("ajax.php", { sendToValue: str },
+			function(data){
+				console.log('ajax get simulationSelect return');
+			    //fill in the trainingData
+			    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
+			    //fill in the test items
+			    $("#testWords").val(data.testitems.word.join(","));
+			    $("#testPartWords").val(data.testitems.partword.join(","));
+			    $("#testNonWords").val(data.testitems.nonword.join(","));
+			    //fill in the learning params
+			    for(p in data.params){
+			    	$("#"+p).val(data.params[p]);
+			    }
+
+ 			}, 
+			"json");
+	}
+	
+	//add an event to fetch simulation data from the website
+ 	$('#simulationSelect').change(function(){
+		//get simulation data by id number
+		var temp = $(this).val().split(".");
+		var simulationNumber=temp[0] -1;
+//		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","giroux","frank1","frank3","brent","notavailable","notavailable","french","kirkham"];
+		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","notavailable","notavailable","notavailable","notavailable","notavailable","notavailable","french","kirkham"];
+		sendValue(simulationName[simulationNumber]);	
+	});
+	
+
+
 	//function to load the data from a file on the computer
-	function handleCalculate(evt) {
- 		console.log('handleCalculate');	
-        console.log('learnrate:' + $('#learnrate').val());
-        // $("output#list").append(theFile.name);       
+	function handleFileSelect(evt) {
+	    var files = evt.target.files; // FileList object
+		//clear old training data
+		$("textarea#trainingData").text("");
+		// Loop through the FileList and save load.
+		for (var i = 0, f; f = files[i]; i++) {
+	
+	      var reader = new FileReader();
+	      // Closure to capture the file information.
+	      reader.onload = (function(theFile) {
+	        return function(e) {
+	        console.log(theFile.name);
+	        console.log('reader.onload e.target.result:' + e.target.result);
+	        $("output#list").append(theFile.name);       
+	        $("textarea#trainingData").append(e.target.result);
+	    };
+	      })(f);
+	
+	      // Read in the image file as a data URL.
+	      reader.readAsText(f);
 	    }
+	}
+	//tell page what to do when use selects a data file.
+	document.getElementById('userDataFiles').addEventListener('change', handleFileSelect, false);
+        
+	//function to run when calculate button is pressed
+	function handleCalculate(evt) {
+	console.log('handleCalculate');	
+ 	try{
+ 		if (TRACX === null){
+ 			$('#myResult').html("Tracx Simulator not found, try reloading the page or contact us");
+ 		}else{
+ 			$('#myResult').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br/>");
+ 		}
+ 		if ($("#trainingData").val().length < 2){
+ 			$('#myResult').append("Please provide some training data.<br/>");
+ 			return;
+ 		}
+		$('#myResult').append("Loading training data...<br/>");
+		TRACX.setTrainingData($("#trainingData").val());
+		//fill in the params from input form
+		var networkParams = {};
+		$('#paramsform input').each(function(index) {
+			networkParams[this.id] = parseFloat($(this).val());
+		});
+		TRACX.setParameters(networkParams);
+		$('#myResult').append("<em>Network Parameters</em><br/>");
+		$('#myResult').append(JSON.stringify(networkParams) + "<br/>");
+		
+		//encode all the input tokens
+		var encodings = TRACX.getInputEncodings();
+		$('#myResult').append("<em>Token / phoneme encodings</em><br/>");
+		for(enc in encodings){
+			$('#myResult').append("<strong>" + enc + ":</strong> "+ encodings[enc] + "<br/>");
+		}
+		
+	    $('#myResult').append("<em>Training:</em><br/>");
+        //for moment we fake up the calculation part :)
+        var trainSuccess = TRACX.trainNetwork(function(message) {
+		    // this anonymous function will run when the progress callback is called
+		    $('#myResult').append(message + "<br/>");
+		});
+		
+		if (!trainSuccess){
+			 $('#myResult').append("<em>***Training failed***</em>");
+			return;
+		}
+		//TESTING THE NETWORK
+		var graphVals = [];
+    	$('#myResult').append("<em>Testing:</em><br/>");
+        $('#myResult').append("Words :" + $("#testWords").val() + "<br/>");
+		var	ret = TRACX.testWords( $("#testWords").val());
+		if (ret.meanDelta){			
+	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
+	        graphVals.push([ret.meanDelta]);
+       	}else{
+       		$('#myResult').append("-<br/>");
+	        graphVals.push([0]);      	
+       	}
+        $('#myResult').append("Part Words :" + $("#testPartWords").val() + "<br/>");
+		ret = TRACX.testWords($("#testPartWords").val());
+    	if (ret.meanDelta){			
+	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
+	        graphVals.push([ret.meanDelta]);
+       	}else{
+       		$('#myResult').append("-<br/>");
+	        graphVals.push([0]);      	
+       	}
+        $('#myResult').append("Non Words :" + $("#testNonWords").val() + "<br/>");
+		var testWords = $("#testNonWords").val();
+    	ret = TRACX.testWords($("#testNonWords").val());
+    	if (ret.meanDelta){			
+	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
+	        graphVals.push([ret.meanDelta]);
+       	}else{
+       		$('#myResult').append("-<br/>");
+	        graphVals.push([0]);      	
+       	}
+		console.log($("#graphResults").val());
+       	if ($("#graphResults").val()){
+	        plotResults(graphVals);
+       	}
+    }
+    catch(err){
+		$('#myResult').append("Calculation error: " + err.message);
+    }    
+    }
 	//add a click event to the calculate button
  	$('#calculate').click(handleCalculate);
       
-</script>
+	function plotResults(WordErrorScores){
+	try{
+	    // Can specify a custom tick Array.
+	    // Ticks should match up one for each y value (category) in the series.
+	    var ticks = ['Test Items'];
+	     
+	    var plot1 = $.jqplot('chart1', WordErrorScores, {
+	        // The "seriesDefaults" option is an options object that will
+	        // be applied to all series in the chart.
+	        seriesDefaults:{
+	            renderer:$.jqplot.BarRenderer,
+	            rendererOptions: {fillToZero: true}
+	        },
+	        // Custom labels for the series are specified with the "label"
+	        // option on the series option.  Here a series option object
+	        // is specified for each series.
+	        series:[
+	            {label:'Word Errors'},
+	            {label:'Part Word Errors'},
+	            {label:'Non Word Errors'}
+	        ],
+	        // Show the legend and put it outside the grid, but inside the
+	        // plot container, shrinking the grid to accomodate the legend.
+	        // A value of "outside" would not shrink the grid and allow
+	        // the legend to overflow the container.
+	        legend: {
+	            show: true,
+	            placement: 'outsideGrid'
+	        },
+	        axes: {
+	            // Use a category axis on the x axis and use our custom ticks.
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                ticks: ticks
+	            },
+	            // Pad the y axis just a little so bars can get close to, but
+	            // not touch, the grid boundaries.  1.2 is the default padding.
+	            yaxis: {
+					min:0,
+	                pad: 1.05
+	            }
+	        }
+	    });
+	    }
+    catch(err){
+		$('#myResult').append("Graphing error: " + err.message);
+    }    
+    
+	}
+	</script>
+
     <footer>
-     <p>&copy; Caspar Addyman, 2011</p>
+     <p>&copy; <a href="mailto:C.Addyman@bbk.ac.uk">Caspar Addyman</a> &amp; Robert M. French, 2011</p>
     </footer>
   </div>
 </body>
