@@ -17,7 +17,8 @@ var TRACX = (function () {
     //private variables
     var trainingData,userEncodings, inputEncodings,
    		weightsInputToHidden, weightsHiddenToOutput, //weight matrices
-   		OLD_deltaWeightsInputToHidden, OLD_deltaWeightsHiddenToOutput;  //old matrices for momentum calc
+   		OLD_deltaWeightsInputToHidden, OLD_deltaWeightsHiddenToOutput,  //old matrices for momentum calc
+   		testWords, testPartWords, testNonWords; //test items
     //default parameters
     var params = {
     	learningRate: 0.04,
@@ -46,7 +47,14 @@ var TRACX = (function () {
     API.setTrainingData = function (TrainingData) {
 		trainingData = TrainingData;
     };
-    
+    API.setTestData = function (Words,PartWords,NonWords) {
+		testWords=Words;
+		testPartWords=PartWords;
+		testNonWords=NonWords;
+    };
+    API.getTestData = function () {
+		return {words:testWords,partWords:testPartWords,nonWords:testNonWords};
+    };
    
    	//find the unique elements of array - useful for getting all possible phonemes/syllables
 	function unique(array) {

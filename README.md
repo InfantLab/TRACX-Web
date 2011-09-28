@@ -19,8 +19,8 @@ http://sylvester.jcoglan.com/
 
 Optional:
 =========
-JQTip 1.0.0-rc3 
 
+JQTip 1.0.0-rc3 or greater: 
 http://craigsworks.com/projects/qtip/
                       
 
@@ -41,22 +41,23 @@ http://yourbrainondrugs.net/tracx/
 Together with an in browser debug engine. We recommend Firebug:
 https://getfirebug.com/
 
-We have a guide to debugging 
+We have a beginners guide to debugging available at:
+http://yourbrainondrugs.net/tracx/debughelp.html
+
 
 3. Adapting and modifying the TRACX code yourself
 =================================================
 
 This code is open source and freely available for you to use in your own projects. Just download the code and away you go. We recommend the Aptana Development environment.
 
-Aptana 
+Aptana :
 http://aptana.org/
-
 
 Within Aptana you can get started quickly by choosing the File/Import.. menu. Project type is __git__ and the repository URI is:
 
-99% of the code is client-side javascript so will work locally. If you want to get the php working (to load up default datasets) we recommend:
+99% of the code is client-side javascript so will work locally. If you want to get the php working (to load up default datasets) we recommend
 
-XAMMP
+XAMMP:
 http://www.apachefriends.org/en/xampp.html
 
 That's it.

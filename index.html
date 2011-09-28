@@ -23,7 +23,7 @@
   <script type='text/javascript' src='lib/plugins/jqplot.barRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.categoryAxisRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
-  <script type='text/javascript' src='lib//jquery.qtip-1.0.0-rc3.min.js'></script>
+  <script type='text/javascript' src='lib/jquery.qtip-1.0.0-rc3.min.js'></script>
   <script type='text/javascript' src='lib/sylvester.js'></script>
  
   <!-- The TRACX simulator itself --> 
@@ -272,11 +272,12 @@
 		}
 		
 	    $('#myResult').append("<em>Training:</em><br/>");
+        var loggingLevel = 'Verbose';
         //for moment we fake up the calculation part :)
-        var trainSuccess = TRACX.trainNetwork(function(message) {
+        var trainSuccess = TRACX.runFullSimulation(function(message) {
 		    // this anonymous function will run when the progress callback is called
 		    $('#myResult').append(message + "<br/>");
-		});
+		},loggingLevel);
 		
 		if (!trainSuccess){
 			 $('#myResult').append("<em>***Training failed***</em>");
@@ -378,6 +379,8 @@
 
     <footer>
      <p>&copy; <a href="mailto:C.Addyman@bbk.ac.uk">Caspar Addyman</a> &amp; Robert M. French, 2011</p>
+    For a guide on how to step through the TRACX simulator code <a href="debugmode.html">click here</a>.
+    Source Code: <a href="https://github.com/YourBrain/TRACX-Web">github.com/YourBrain/TRACX-Web</a>
     </footer>
   </div>
 </body>

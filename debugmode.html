@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1"
+      http-equiv="Content-Type">
+    <title>How to run TRACX simulator in debug mode</title>
+  </head>
+  <body>
+    <h2>How to run the TRACX online simulator in debug mode. </h2>
+    This simulator lets you train and test a TRACX model with your own
+    data. It also lets you adjust the network parameters and see how
+    these affect learning. However, it will sometimes be useful to step
+    through the code yourself. This guide helps you use your browser's
+    debug tools. <br>
+    <br>
+    <span style="font-style: italic;">Contents:</span><br>
+    <a href="#Firefox">Firefox + Firebug</a><br>
+    <a href="#Google_Chrome">Google Chrome</a><br>
+    <a href="#Internet_Explorer">Internet Explorer</a><br>
+    <a href="#Code_Editing">Code Editing</a><br>
+    <h3><a name="Firefox"></a>Firefox + Firebug</h3>
+    <span style="font-weight: bold;">Step 0:</span> Before starting, we
+    recommend you upgrade to a recent version of your browser; <span
+      style="text-decoration: underline;"></span><a
+      href="http://www.mozilla.com/firefox/">Mozilla Firefox</a> vers. 4
+    or higher.<br>
+    <br>
+    <span style="font-weight: bold;">Step 1:</span> Download and install
+    the <a href="https://getfirebug.com">Firebug</a> plugin.&nbsp; <br>
+    <br>
+    <span style="font-weight: bold;">Step 2: </span>Click on the
+    Firebug toolbar button to launch the debug console. As shown here. <img
+      title="The Firebug toolbar button" style=" width: 250px; height:
+      151px;" alt="Firebug toolbar button" src="imgs/firebug-icon.png"
+      align="top" hspace="5" vspace="5"><br>
+    <br>
+    <span style="font-weight: bold;">Step 3: </span>Launch the <a
+      target="_blank" href="index.html">TRACX simulator</a>.<br>
+    <span style="font-weight: bold;"><br>
+      Step 4: </span><big><big><span style="font-weight: bold; color:
+          rgb(255, 0, 0);"></span></big></big>You can view the code for
+    the simulator in the Script tab <big><big><span style="font-weight:
+          bold; color: rgb(255, 0, 0);">A</span></big></big> on the left
+    hand side. You can add breakpoints <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">B</span></big></big>
+    which pause the code on a given line. Here we have paused execution
+    at the start of the <code><span style="font-weight: bold;">handleCalculate</span></code>
+    function which gets called when the calculate button is pressed. You
+    can then step through the code line by line to see what it is doing.
+    The triangular cursor <big><big><span style="font-weight: bold;
+          color: rgb(255, 0, 0);">C</span></big></big> indicates which
+    line will be executed next. The right hand panel lists all the
+    variables currently in scope and lets you <span style="font-style:
+      italic;">watch</span> how they change. <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">D</span></big></big>
+    shows the value of the <code><span style="font-weight: bold;">evt</span></code>
+    parameter which was passed into the <code><span style="font-weight:
+        bold;">handleCalculate</span></code> function when it was
+    called.<br>
+    <br>
+    <img style=" width: 699px; height: 348px;" alt="Firebug console
+      steping through Tracx code" src="imgs/firebug.tracx.debug.png"><span
+      style="font-weight: bold;">&nbsp;</span><br>
+    &nbsp;<br>
+    <span style="font-weight: bold;">Step 5: </span><big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);"></span></big></big>You
+    can control what happens at each step with the buttons or with
+    corresponding function keys. You can press the&nbsp;<img style="
+      width: 20px; height: 21px;" alt="continue"
+      src="imgs/firebug.continue.png">&nbsp; continue button (or F8) to
+    run at normal speed without stopping. Or you can step through the
+    code in two distinct ways.&nbsp; <br>
+    <ul>
+      <li>Using the <img style=" width: 23px; height: 19px;" alt="step
+          over" src="imgs/firebug.over.png"> step-over button (F10), you
+        can step through the code at the current level in the code
+        hierarchy. This is advisable method of observing what a piece of
+        coding is doing. <br>
+      </li>
+      <li>Using the&nbsp;<img style=" width: 22px; height: 20px;"
+          alt="step inot" src="imgs/firebug.into.png">&nbsp; step-into
+        (F11) button, the debugger will step into every sub-function
+        too. Often this leads into the code from the highly-compact
+        libraries (JQuery, Slyvester) which can look quite confusing.
+        Pressing the <img style=" width: 22px; height: 21px;" alt="step
+          out" src="imgs/firebug.out.png"> step-out button (shift-F11)
+        returns you to the previous level. <br>
+        <br>
+        <img style=" width: 295px; height: 131px;" alt="accidently
+          debugging JQuery" src="imgs/firebug.oops.jquery.png"></li>
+    </ul>
+    <span style="font-weight: bold;">Steps 6, 7, 8 ... :</span> Firebug
+    is a powerful tool with a great many options. A more detailed guide
+    to javascript debugging with Firebug can be found here: <a
+      href="https://getfirebug.com/javascript">https://getfirebug.com/javascript</a><br>
+    <br>
+    <h3><a name="Google_Chrome"></a>Google Chrome</h3>
+    <span style="font-weight: bold;">Step 0:</span> Before starting, we
+    recommend you upgrade to a recent version of your browser; <a
+      href="http://www.google.com/chrome">Google Chrome</a> vers. 13 or
+    higher<br>
+    <span style="text-decoration: underline;"></span><a
+      href="http://www.mozilla.com/firefox/"></a><br>
+    <span style="font-weight: bold;">Step 1: </span>Google Chrome has a
+    set of developer tools built into it. You can access these by
+    clicking on spanner icon and choosing from the Tools menu. <img
+      style=" width: 539px; height: 493px;" alt="Chrome Dev Tools"
+      src="imgs/chrome.devtools.png"><br>
+    <br>
+    <span style="font-weight: bold;">Step 2</span><span
+      style="font-weight: bold;">: </span>Launch the <a
+      target="_blank" href="index.html">TRACX simulator</a>.<br>
+    <span style="font-weight: bold;"><br>
+      Step 3: </span>The Chrome debug console works very much like
+    Firebug in Firefox. <big><big><span style="font-weight: bold;
+          color: rgb(255, 0, 0);"></span></big></big>You can view the
+    code for the simulator in the Script tab <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">A</span></big></big>
+    on the left hand side. You can add breakpoints <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">B</span></big></big>
+    which pause the code on a given line. Here we have paused execution
+    at the start of the <code><span style="font-weight: bold;">networkOutput</span></code>
+    function. You can then step through the code line by line to see
+    what it is doing. The arrowhead cursor <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">C</span></big></big>
+    indicates which line will be executed next. The right hand panel
+    lists all the variables currently in scope and lets you <span
+      style="font-style: italic;">watch</span> how they change. <big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);">D</span></big></big>
+    shows the value of the <code><span style="font-weight: bold;">Input2</span></code>
+    parameter, which is the array representing one of the encoded inputs
+    of the network.<br>
+    <br>
+    <img style=" width: 720px; height: 292px;" alt="chrome developer
+      tools" src="imgs/chrome.devconsole.png"><br>
+    &nbsp;
+    <span style="font-weight: bold;"></span><br>
+    <span style="font-weight: bold;">Step 4: </span><big><big><span
+          style="font-weight: bold; color: rgb(255, 0, 0);"></span></big></big>You
+    can control what happens at each step with the buttons or with
+    corresponding function keys. You can press the&nbsp;<img style="
+      width: 28px; height: 21px;" alt="continue"
+      src="imgs/chrome.dev.continue.png">&nbsp; continue button (or F8)
+    to run at normal speed without stopping. Or you can step through the
+    code in two distinct ways.&nbsp; <br>
+    <ul>
+      <li>Using the&nbsp; <img style=" width: 23px; height: 17px;"
+          alt="step over" src="imgs/chrome.dev.over.png"> step-over
+        button (F10), you can step through the code at the current level
+        in the code hierarchy. This is advisable method of observing
+        what a piece of coding is doing. <br>
+      </li>
+      <li>Using the&nbsp;<img style=" width: 27px; height: 18px;"
+          alt="step inot" src="imgs/chrome.dev.into.png">&nbsp;
+        step-into (F11) button, the debugger will step into every
+        sub-function too. Often this leads into the code from the
+        highly-compact libraries (JQuery, Slyvester) which can look
+        quite confusing. Pressing the <img style=" width: 28px; height:
+          18px;" alt="step over" src="imgs/chrome.dev.out.png"> step-out
+        button (shift-F11) returns you to the previous level. <br>
+      </li>
+    </ul>
+    <span style="font-weight: bold;">Steps 5, 6, 7 ... :</span> A more
+    detailed guide to javascript debugging in Google Chrome can be found
+    here: <a href="http://code.google.com/chrome/devtools/">http://code.google.com/chrome/devtools</a><br>
+    <br>
+    <h3><a name="Internet_Explorer"></a>Internet Explorer</h3>
+    <span style="font-weight: bold;">Step 0:</span> Before starting, we
+    recommend you upgrade to a recent version of your browser;&nbsp; <a
+href="http://windows.microsoft.com/en-GB/internet-explorer/products/ie/home">Internet
+      Explorer</a> vers. 9 or higher<br>
+    <br>
+    <span style="font-weight: bold;">Steps 1, 2, 3 ... :</span>
+    Microsoft provide a debugging tool that you can download here:<span
+      style="font-family: 'Segoe UI Light','Segoe
+      UI',Arial,Verdana,Tahoma,sans-serif;"></span><a
+href="http://www.microsoft.com/download/en/details.aspx?displaylang=en&amp;id=18359">
+      Internet Explorer Developer Toolbar</a>. It works much like the
+    Chrome and Firefox debuggers.<br>
+    <br>
+    <h2><a name="Code_Editing"></a>Code Editing </h2>
+    The code running from the browser is not directly modifiable because
+    a new copy is downloaded from our server each time you restart your
+    browser. If you would like to modify or adapt the code you need to
+    run your own local copy. Please go to our github page for
+    instructions.<br>
+    <br>
+    <a href="https://github.com/YourBrain/TRACX-Web">https://github.com/YourBrain/TRACX-Web</a><br>
+    <br>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    &copy; <a href="mailto:C.Addyman@bbk.ac.uk">Caspar Addyman</a>
+    &amp; Robert M. French, 2011<br>
+  </body>
+</html>
