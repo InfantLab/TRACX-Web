@@ -18,6 +18,95 @@
     <a href="#Google_Chrome">Google Chrome</a><br>
     <a href="#Internet_Explorer">Internet Explorer</a><br>
     <a href="#Code_Editing">Code Editing</a><br>
+    <br>
+    <h3>A note on code organisation</h3>
+    <span style="font-weight: bold;"><span style="font-weight: bold;"><span
+          style="font-weight: bold;"><span style="font-weight: bold;"></span></span></span></span>The
+    code for this simulation is divided across a number of different
+    files. Your browser loads all the appropriate files <span
+      style="font-weight: bold;"><span style="font-weight: bold;"><span
+          style="font-weight: bold;"><span style="font-weight: bold;"></span></span></span>:</span>
+    <br>
+    <ul>
+      <li><span style="font-weight: bold;">index.html </span>- contains
+        the html to lay out the main page plus some javascript to call
+        the TRACX simulator and display the results. <br>
+      </li>
+      <li><span style="font-weight: bold;">tracx.js</span> -
+        self-contained javascript module that contains all the code to
+        train and test TRACX networks.<br>
+      </li>
+    </ul>
+    3-rd party code<br>
+    <ul>
+      <li><span style="font-weight: bold;">jquery.js</span> (via google)
+        - a helper library that makes it easier to control forms and
+        other html from within our code. (
+        <meta charset="utf-8">
+        <span class="Apple-style-span" style="color: rgb(0, 0, 0);
+          font-family: helvetica, arial, freesans, clean, sans-serif;
+          font-size: 13px; font-style: normal; font-variant: normal;
+          font-weight: normal; letter-spacing: normal; line-height:
+          20px; orphans: 2; text-align: -webkit-auto; text-indent: 0px;
+          text-transform: none; white-space: normal; widows: 2;
+          word-spacing: 0px; -webkit-text-decorations-in-effect: none;
+          -webkit-text-size-adjust: auto; -webkit-text-stroke-width:
+          0px; background-color: rgb(248, 248, 248); "><a
+            href="http://jquery.com/" style="margin-top: 0px;
+            margin-right: 0px; margin-bottom: 0px; margin-left: 0px;
+            padding-top: 0px; padding-right: 0px; padding-bottom: 0px;
+            padding-left: 0px; color: rgb(65, 131, 196);
+            text-decoration: none; ">http://jquery.com/</a></span>)<br>
+      </li>
+      <li><span style="font-weight: bold;">/lib/sylvester.js</span> - a
+        matrix and vector library, used in the neural network
+        calculations (
+        <meta charset="utf-8">
+        <span class="Apple-style-span" style="color: rgb(0, 0, 0);
+          font-family: helvetica, arial, freesans, clean, sans-serif;
+          font-size: 13px; font-style: normal; font-variant: normal;
+          font-weight: normal; letter-spacing: normal; line-height:
+          20px; orphans: 2; text-align: -webkit-auto; text-indent: 0px;
+          text-transform: none; white-space: normal; widows: 2;
+          word-spacing: 0px; -webkit-text-decorations-in-effect: none;
+          -webkit-text-size-adjust: auto; -webkit-text-stroke-width:
+          0px; background-color: rgb(248, 248, 248); "><a
+            href="http://sylvester.jcoglan.com/" style="margin-top: 0px;
+            margin-right: 0px; margin-bottom: 0px; margin-left: 0px;
+            padding-top: 0px; padding-right: 0px; padding-bottom: 0px;
+            padding-left: 0px; color: rgb(65, 131, 196);
+            text-decoration: underline; ">http://sylvester.jcoglan.com/</a></span>)<br>
+      </li>
+      <li>
+        <meta charset="utf-8">
+        <span class="Apple-style-span" style="color: rgb(0, 0, 0);
+          font-family: helvetica, arial, freesans, clean, sans-serif;
+          font-size: 13px; font-style: normal; font-variant: normal;
+          font-weight: normal; letter-spacing: normal; line-height:
+          20px; orphans: 2; text-align: -webkit-auto; text-indent: 0px;
+          text-transform: none; white-space: normal; widows: 2;
+          word-spacing: 0px; -webkit-text-decorations-in-effect: none;
+          -webkit-text-size-adjust: auto; -webkit-text-stroke-width:
+          0px; background-color: rgb(248, 248, 248); "></span><span
+          style="font-weight: bold;">/lib/jqplot.js -</span> a graphing
+        plug-in for JQuery (
+        <meta charset="utf-8">
+        <span class="Apple-style-span" style="color: rgb(0, 0, 0);
+          font-family: helvetica, arial, freesans, clean, sans-serif;
+          font-size: 13px; font-style: normal; font-variant: normal;
+          font-weight: normal; letter-spacing: normal; line-height:
+          20px; orphans: 2; text-align: -webkit-auto; text-indent: 0px;
+          text-transform: none; white-space: normal; widows: 2;
+          word-spacing: 0px; -webkit-text-decorations-in-effect: none;
+          -webkit-text-size-adjust: auto; -webkit-text-stroke-width:
+          0px; background-color: rgb(248, 248, 248); "><a
+            href="http://www.jqplot.com/" style="margin-top: 0px;
+            margin-right: 0px; margin-bottom: 0px; margin-left: 0px;
+            padding-top: 0px; padding-right: 0px; padding-bottom: 0px;
+            padding-left: 0px; color: rgb(65, 131, 196);
+            text-decoration: none; ">http://www.jqplot.com/</a></span>)<br>
+      </li>
+    </ul>
     <h3><a name="Firefox"></a>Firefox + Firebug</h3>
     <span style="font-weight: bold;">Step 0:</span> Before starting, we
     recommend you upgrade to a recent version of your browser; <span

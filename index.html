@@ -56,10 +56,11 @@
         <label for="dataselection">Or select file</label>
      <input type="file" id="userDataFiles" multiple />
 <output id="trainingstring"></output><br/>
-<textarea id="trainingData" class="required" rows="5" cols="60">abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef</textarea><br/>
+<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br/>
 <em>Each training sentence should begin on a new line.</em>
+
 <h3>Test items</h3>
-<table><tr>
+<table summary="Test items"><tr>
 	<td>Words:</td>
 	<td><textarea id="testWords" class="required" rows="1" cols="50">ab,cd,ef</textarea></td>
 </tr><tr>
@@ -69,6 +70,16 @@
 	<td>Non Words:</td>
 	<td><textarea id="testNonWords" rows="1" cols="50">ba,dc,fe</textarea></td>
 </tr>
+</table><br/>
+
+<h3>Track learning</h3>     	<input type="checkbox" id="trackingFlag" checked="unchecked"/> Track<br/>
+
+<table summary="Track learning"><tr>
+	<td>Test bigrams:</td>
+	<td><textarea id="trackingBigrams" class="required" rows="1" cols="50">ab,ba</textarea></td>
+</tr><tr>
+	<td>Test network every N steps:</td>
+	<td><textarea id="trackingInterval"  rows="1" cols="50">10</textarea></td>
 </table><br/>
 <em>Test items should be seperated by commas.</em>
 <div id="debug"></div>
@@ -104,11 +115,12 @@
     </form>
     <fieldset>
         <legend>Step 3: Run Simulator</legend>	
-		<input type="button" id="calculate" value="Calculate.." />
+		<input type="button" id="calculate" value="Run.." />
     	<input type="checkbox" id="graphResults" checked="checked"/> Graph results<br/>
 		<div id="myResult"></div>
 		<fieldset><legend>Graphic Output</legend>	
-	<div id="chart1" style="height:400px;width:800px; "></div>
+	<div id="chart1" style="height:400px; "></div>
+	<div id="chart2" style="height:400px; "></div>
 	</fieldset>
 	</fieldset>
 
@@ -163,7 +175,7 @@
 	    	style: 'cream'
 		});
 		$('#numberSubjects').qtip({
-	    	content: '<em>Not yet implemented!</em><br/>How many times do we run the full simulation and test?<br/><em>Default: 1</em>',
+	    	content: 'How many times do we run the full simulation and test?<br/><em>Default: 1</em>',
 	    	style: 'cream'
 		});
 		$('#temperature').qtip({
@@ -272,51 +284,66 @@
 		}
 		
 	    $('#myResult').append("<em>Training:</em><br/>");
-        var loggingLevel = 'Verbose';
-        //for moment we fake up the calculation part :)
-        var trainSuccess = TRACX.runFullSimulation(function(message) {
+        var loggingLevel = 1;
+        
+        //do we track learning as we go along?
+        TRACX.setTrackingData({ flag:$("#trackingFlag").val(),
+        						bigrams:$("#trackingBigrams").val(),
+        						interval:$("#trackingInterval").val()        	
+      						});		
+        
+        
+        //send the test data to the TRACX object
+        TRACX.setTestData({	Words:$("#testWords").val(),
+							PartWords:$("#testPartWords").val(),
+							NonWords:$("#testNonWords").val()
+						 });
+						 
+		//////////////////////////////////						 
+        //THIS LINE DOES ALL THE HARD WORK
+        var ret = TRACX.runFullSimulation(function(message) {
 		    // this anonymous function will run when the progress callback is called
-		    $('#myResult').append(message + "<br/>");
+		    $('#myResult').append(message);
 		},loggingLevel);
-		
-		if (!trainSuccess){
+		if (!ret.trainSuccess){
 			 $('#myResult').append("<em>***Training failed***</em>");
 			return;
 		}
+		///////////////////////////////////////
+		
 		//TESTING THE NETWORK
 		var graphVals = [];
-    	$('#myResult').append("<em>Testing:</em><br/>");
+    	$('#myResult').append("<br/><em>Testing:</em><br/>");
         $('#myResult').append("Words :" + $("#testWords").val() + "<br/>");
-		var	ret = TRACX.testWords( $("#testWords").val());
-		if (ret.meanDelta){			
-	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
-	        graphVals.push([ret.meanDelta]);
+		if (ret.Words.mean){			
+	    	$('#myResult').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br/>");
+	        graphVals.push([ret.Words.mean]);
        	}else{
        		$('#myResult').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
         $('#myResult').append("Part Words :" + $("#testPartWords").val() + "<br/>");
-		ret = TRACX.testWords($("#testPartWords").val());
-    	if (ret.meanDelta){			
-	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
-	        graphVals.push([ret.meanDelta]);
+    	if (ret.PartWords.mean){			
+	    	$('#myResult').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br/>");
+	        graphVals.push([ret.PartWords.mean]);
        	}else{
        		$('#myResult').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
         $('#myResult').append("Non Words :" + $("#testNonWords").val() + "<br/>");
-		var testWords = $("#testNonWords").val();
-    	ret = TRACX.testWords($("#testNonWords").val());
-    	if (ret.meanDelta){			
-	    	$('#myResult').append(ret.meanDelta.toFixed(3) + "<br/>");
-	        graphVals.push([ret.meanDelta]);
+    	if (ret.NonWords.mean){			
+	    	$('#myResult').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br/>");
+	        graphVals.push([ret.NonWords.mean]);
        	}else{
        		$('#myResult').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
 		console.log($("#graphResults").val());
        	if ($("#graphResults").val()){
-	        plotResults(graphVals);
+	      	plotBarGraph(graphVals);
+	      	if($("#trackingFlag").val()){
+	      		plotLearning(ret.trackingSteps, ret.trackingOutputs);
+	      	}
        	}
     }
     catch(err){
@@ -326,7 +353,7 @@
 	//add a click event to the calculate button
  	$('#calculate').click(handleCalculate);
       
-	function plotResults(WordErrorScores){
+	function plotBarGraph(WordErrorScores){
 	try{
 	    // Can specify a custom tick Array.
 	    // Ticks should match up one for each y value (category) in the series.
@@ -373,14 +400,51 @@
     catch(err){
 		$('#myResult').append("Graphing error: " + err.message);
     }    
-    
 	}
+	
+	function plotLearning(trackingSteps, trackingOutputs){
+		var serieslabels = [];
+		var seriesdata = []
+		for(x in trackingOutputs){
+			serieslabels.push({label:x});
+			seriesdata.push(trackingOutputs[x]);
+		}
+	  	var plot2 = $.jqplot ('chart2',seriesdata, {
+			  // Give the plot a title.
+			  title: 'Bigram error over time',
+			  // You can specify options for all axes on the plot at once with
+			  // the axesDefaults object.  Here, we're using a canvas renderer
+			  // to draw the axis label which allows rotated text.
+			  axesDefaults: {
+			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+			  },
+			   series:serieslabels,
+			  // An axes object holds options for all axes.
+			  // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
+			  // Up to 9 y axes are supported.
+			  axes: {
+			    // options for each axis are specified in seperate option objects.
+			xaxis: {
+			  label: "Number  of training items",
+			  ticks: trackingSteps,
+			  // Turn off "padding".  This will allow data point to lie on the
+			  // edges of the grid.  Default padding is 1.2 and will keep all
+			  // points inside the bounds of the grid.
+			  pad: 0
+			},
+			yaxis: {
+			  label: "Mean Error"
+			    }
+			}
+	    });
+    }
 	</script>
 
     <footer>
+    For a guide on how to step through the TRACX simulator code <a href="debugmode.html" target="_blank">click here</a>.<br/>
+    To report a bug, <a href="https://github.com/YourBrain/TRACX-Web/issues/new"target="_blank">click here</a><br/>
+    Source Code: <a href="https://github.com/YourBrain/TRACX-Web" target="_blank">github.com/YourBrain/TRACX-Web</a>
      <p>&copy; <a href="mailto:C.Addyman@bbk.ac.uk">Caspar Addyman</a> &amp; Robert M. French, 2011</p>
-    For a guide on how to step through the TRACX simulator code <a href="debugmode.html">click here</a>.
-    Source Code: <a href="https://github.com/YourBrain/TRACX-Web">github.com/YourBrain/TRACX-Web</a>
     </footer>
   </div>
 </body>
