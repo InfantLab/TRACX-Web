@@ -22,6 +22,8 @@
   <link rel="stylesheet" href="lib/jquery.jqplot.min.css" type="text/css" />
   <script type='text/javascript' src='lib/plugins/jqplot.barRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.categoryAxisRenderer.min.js'></script>
+  <script type="text/javascript" src="lib/plugins/jqplot.canvasTextRenderer.min.js"></script>
+  <script type='text/javascript' src='lib/plugins/jqplot.canvasAxisLabelRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
   <script type='text/javascript' src='lib/jquery.qtip-1.0.0-rc3.min.js'></script>
   <script type='text/javascript' src='lib/sylvester.js'></script>
@@ -92,7 +94,7 @@
                 <td> <input type="text" id="learningRate" class="required"  value="0.04"/></td>
             </tr><tr>
                 <td>Recognition Criterion</td>
-                <td><input type="text" id="recognitionCriterion" class="required"  value="0.3"/></td></tr>
+                <td><input type="text" id="recognitionCriterion" class="required"  value="0.4"/></td></tr>
             <tr>
                 <td>Reinforcement Threshold</td>
                 <td><input type="text" id="reinforcementThreshold" class="required" value="0.25"/></td></tr>
@@ -119,8 +121,8 @@
     	<input type="checkbox" id="graphResults" checked="checked"/> Graph results<br/>
 		<div id="myResult"></div>
 		<fieldset><legend>Graphic Output</legend>	
-	<div id="chart1" style="height:400px; "></div>
-	<div id="chart2" style="height:400px; "></div>
+	<div id="chart1" style="height:400px;width:600px "></div>
+	<div id="chart2" style="height:400px;width:600px "></div>
 	</fieldset>
 	</fieldset>
 
@@ -265,6 +267,9 @@
  			$('#myResult').append("Please provide some training data.<br/>");
  			return;
  		}
+ 		//clear the old graphs
+ 		$('#chart1').empty();  
+		$('#chart2').empty();  
 		$('#myResult').append("Loading training data...<br/>");
 		TRACX.setTrainingData($("#trainingData").val());
 		//fill in the params from input form
@@ -358,8 +363,10 @@
 	    // Can specify a custom tick Array.
 	    // Ticks should match up one for each y value (category) in the series.
 	    var ticks = ['Test Items'];
-	     
+	    $('chart1').empty();  
 	    var plot1 = $.jqplot('chart1', WordErrorScores, {
+	    	  // Give the plot a title.
+			  title: 'Mean error scores per test item type',
 	        // The "seriesDefaults" option is an options object that will
 	        // be applied to all series in the chart.
 	        seriesDefaults:{
@@ -374,10 +381,7 @@
 	            {label:'Part Word Errors'},
 	            {label:'Non Word Errors'}
 	        ],
-	        // Show the legend and put it outside the grid, but inside the
-	        // plot container, shrinking the grid to accomodate the legend.
-	        // A value of "outside" would not shrink the grid and allow
-	        // the legend to overflow the container.
+	        // Show the legend and put it inside the grid
 	        legend: {
 	            show: true,
 	            placement: 'outsideGrid'
@@ -386,14 +390,18 @@
 	            // Use a category axis on the x axis and use our custom ticks.
 	            xaxis: {
 	                renderer: $.jqplot.CategoryAxisRenderer,
-	                ticks: ticks
+	                ticks: ticks,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 	            },
 	            // Pad the y axis just a little so bars can get close to, but
 	            // not touch, the grid boundaries.  1.2 is the default padding.
 	            yaxis: {
 					min:0,
-	                pad: 1.05
-	            }
+	                pad: 1.05,
+	   				label: "Mean Error",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
 	        }
 	    });
 	    }
@@ -409,7 +417,7 @@
 			serieslabels.push({label:x});
 			seriesdata.push(trackingOutputs[x]);
 		}
-	  	var plot2 = $.jqplot ('chart2',seriesdata, {
+	    var plot2 = $.jqplot ('chart2',seriesdata, {
 			  // Give the plot a title.
 			  title: 'Bigram error over time',
 			  // You can specify options for all axes on the plot at once with
@@ -418,6 +426,11 @@
 			  axesDefaults: {
 			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 			  },
+	  	        // Show the legend and put it inside the grid
+		        legend: {
+		            show: true,
+		            placement: 'outsideGrid'
+		        },
 			   series:serieslabels,
 			  // An axes object holds options for all axes.
 			  // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
@@ -426,6 +439,7 @@
 			    // options for each axis are specified in seperate option objects.
 			xaxis: {
 			  label: "Number  of training items",
+  			  labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
 			  ticks: trackingSteps,
 			  // Turn off "padding".  This will allow data point to lie on the
 			  // edges of the grid.  Default padding is 1.2 and will keep all
@@ -433,7 +447,8 @@
 			  pad: 0
 			},
 			yaxis: {
-			  label: "Mean Error"
+			  label: "Mean Error",
+			  labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 			    }
 			}
 	    });
