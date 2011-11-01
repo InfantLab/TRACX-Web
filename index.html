@@ -20,12 +20,15 @@
   <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js?ver=1.6.4'></script>
   <script type='text/javascript' src='lib/jquery.jqplot.min.js'></script>
   <link rel="stylesheet" href="lib/jquery.jqplot.min.css" type="text/css" />
+  <link rel="stylesheet" href="lib/diQuery-collapsiblePanel.css" type="text/css" />
+  
   <script type='text/javascript' src='lib/plugins/jqplot.barRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.categoryAxisRenderer.min.js'></script>
   <script type="text/javascript" src="lib/plugins/jqplot.canvasTextRenderer.min.js"></script>
   <script type='text/javascript' src='lib/plugins/jqplot.canvasAxisLabelRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
   <script type='text/javascript' src='lib/jquery.qtip-1.0.0-rc3.min.js'></script>
+  <script type='text/javascript' src='lib/diQuery-collapsiblePanel.js'></script>
   <script type='text/javascript' src='lib/sylvester.js'></script>
  
   <!-- The TRACX simulator itself --> 
@@ -70,7 +73,7 @@
 	<td><textarea id="testPartWords"  rows="1" cols="50">bc,de,fa</textarea></td>
 </tr><tr>
 	<td>Non Words:</td>
-	<td><textarea id="testNonWords" rows="1" cols="50">ba,dc,fe</textarea></td>
+	<td><textarea id="testNonWords" rows="1" cols="50">ad,bf,fd</textarea></td>
 </tr>
 </table><br/>
 
@@ -78,7 +81,7 @@
 
 <table summary="Track learning"><tr>
 	<td>Test bigrams:</td>
-	<td><textarea id="trackingBigrams" class="required" rows="1" cols="50">ab,ba</textarea></td>
+	<td><textarea id="trackingBigrams" class="required" rows="1" cols="50">ab,ad</textarea></td>
 </tr><tr>
 	<td>Test network every N steps:</td>
 	<td><textarea id="trackingInterval"  rows="1" cols="50">10</textarea></td>
@@ -117,13 +120,37 @@
     </form>
     <fieldset>
         <legend>Step 3: Run Simulator</legend>	
-		<input type="button" id="calculate" value="Run.." />
-    	<input type="checkbox" id="graphResults" checked="checked"/> Graph results<br/>
+		<p id="currentStep"><em>Training Step 0</em></p>
+    	<input type="button" id="initialize" value="Reset" />
+    	<input type="button" id="stepPlus1" value="Step +1" />
+    	<input type="button" id="stepPlus1percent" value="Step +1%" />
+    	<input type="button" id="stepPlus10" value="Step +10" />
+    	<input type="button" id="stepPlus10percent" value="Step +10%" />
+		<input type="button" id="calculate" value="Run.." /><br/>
+    	<input type="checkbox" id="graphResults" checked="checked"/> Graph outputs   
+		<input type="checkbox" id="graphActivations" checked="checked"/> Graph activations<br/>
 		<div id="myResult"></div>
+		<div class="collapsibleContainer" title="Tracx internal parameters (click to show/hide)">
+			<div id="extraInfo">The internal parameters used by the network will appear here. </div>
+		</div>
 		<fieldset><legend>Graphic Output</legend>	
-	<div id="chart1" style="height:400px;width:600px "></div>
-	<div id="chart2" style="height:400px;width:600px "></div>
+	<div id="chartOutputError" style="height:400px;width:600px "></div>
+	<div id="chartTrackLearning" style="height:400px;width:600px "></div>
 	</fieldset>
+		<fieldset><legend>Network Activations</legend>
+			<table><tr>
+					<td><div id="chartInput1" style="height:150px;width:240px ">INPUT 1</div></td>
+					<td><div id="chartInput2" style="height:150px;width:240px ">INPUT 2</div></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2"><div id="chartHidden" style="height:150px;width:240px ">HIDDEN</div></td>
+				</tr>
+				<tr>
+					<td><div id="chartOutput1" style="height:150px;width:240px ">OUTPUT 1</div></td>
+					<td><div id="chartOutput2" style="height:150px;width:240px ">OUTPUT 2</div></td>
+				</tr>
+			</table>
+		</fieldset>
 	</fieldset>
 
 		
@@ -131,6 +158,11 @@
 	//things to do once document has finished loading
 	$(document).ready(function() 
 	{
+		//allow show/hide the extra information coming back from tracx.js 
+		$(".collapsibleContainer").collapsiblePanel();
+		// $(".collapsibleContainerContent", $(this).parent()).slideToggle();
+       	// $(".collapsibleContainerContent", $(this).parent()).slideToggle();
+
 		/******************************************************
 		 * SOME HELP AND DESCRIPTION OF INPUTS AND PARAMETERS *
 		 * APPEARS AS 'TOOLTIPS' WHEN USER HOVERS MOUSE OVER  *
@@ -201,6 +233,11 @@
 		$.post("ajax.php", { sendToValue: str },
 			function(data){
 				console.log('ajax get simulationSelect return');
+			    //fill the track learning items
+			    $("#trackingFlag").val(data.tracklearning.trackingFlag);
+			    $("#trackingBigrams").val(data.tracklearning.trackingBigram.join(","));
+			    $("#trackingInterval").val(data.tracklearning.trackingInterval);
+			    
 			    //fill in the trainingData
 			    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
 			    //fill in the test items
@@ -247,19 +284,17 @@
 	    };
 	      })(f);
 	
-	      // Read in the image file as a data URL.
+	      // Read in the image file as a data URL.	
 	      reader.readAsText(f);
 	    }
 	}
 	//tell page what to do when use selects a data file.
 	document.getElementById('userDataFiles').addEventListener('change', handleFileSelect, false);
         
-	//function to run when calculate button is pressed
-	function handleCalculate(evt) {
-	console.log('handleCalculate');	
- 	try{
- 		if (TRACX === null){
+   	function initialiseNetwork(){
+   		if (TRACX === null){
  			$('#myResult').html("Tracx Simulator not found, try reloading the page or contact us");
+ 			return;
  		}else{
  			$('#myResult').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br/>");
  		}
@@ -268,8 +303,8 @@
  			return;
  		}
  		//clear the old graphs
- 		$('#chart1').empty();  
-		$('#chart2').empty();  
+ 		$('#chartOutputError').empty();  
+		$('#chartTrackLearning').empty();  
 		$('#myResult').append("Loading training data...<br/>");
 		TRACX.setTrainingData($("#trainingData").val());
 		//fill in the params from input form
@@ -278,17 +313,17 @@
 			networkParams[this.id] = parseFloat($(this).val());
 		});
 		TRACX.setParameters(networkParams);
-		$('#myResult').append("<em>Network Parameters</em><br/>");
-		$('#myResult').append(JSON.stringify(networkParams) + "<br/>");
+		$('#extraInfo').html("<em>Network Parameters</em><br/>");
+		$('#extraInfo').append(JSON.stringify(networkParams) + "<br/>");
 		
 		//encode all the input tokens
 		var encodings = TRACX.getInputEncodings();
-		$('#myResult').append("<em>Token / phoneme encodings</em><br/>");
+		$('#extraInfo').append("<em>Token / phoneme encodings</em><br/>");
 		for(enc in encodings){
-			$('#myResult').append("<strong>" + enc + ":</strong> "+ encodings[enc] + "<br/>");
+			$('#extraInfo').append("<strong>" + enc + ":</strong> "+ encodings[enc] + "<br/>");
 		}
 		
-	    $('#myResult').append("<em>Training:</em><br/>");
+	    $('#extraInfo').append("<em>Training:</em><br/>");
         var loggingLevel = 1;
         
         //do we track learning as we go along?
@@ -303,20 +338,59 @@
 							PartWords:$("#testPartWords").val(),
 							NonWords:$("#testNonWords").val()
 						 });
-						 
-		//////////////////////////////////						 
-        //THIS LINE DOES ALL THE HARD WORK
-        var ret = TRACX.runFullSimulation(function(message) {
-		    // this anonymous function will run when the progress callback is called
-		    $('#myResult').append(message);
-		},loggingLevel);
-		if (!ret.trainSuccess){
-			 $('#myResult').append("<em>***Training failed***</em>");
-			return;
-		}
-		///////////////////////////////////////
-		
-		//TESTING THE NETWORK
+		TRACX.reset();
+		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: 0</em>");
+   	}
+        
+	//function to run when calculate button is pressed
+	function handleCalculate(steps) {
+	console.log('handleCalculate');	
+ 	// try{
+ 		if (TRACX === null){
+ 			$('#myResult').html("Tracx Simulator not found, try reloading the page or contact us");
+ 			return;
+ 		}
+ 		if (!TRACX.getCurrentStep() || TRACX.getCurrentStep() < 0 ){
+	 		initialiseNetwork();
+ 		}
+ 		
+ 		if (steps < 0){
+	 		//////////////////////////////////						 
+	        //THIS LINE DOES ALL THE HARD WORK
+	        var ret = TRACX.runFullSimulation(function(importance, message) {
+			    // this anonymous function will run when the progress callback is called
+			    if (importance > 0){
+				    $('#myResult').append(message);
+			    }else{
+			    	$('#extraInfo').append(message);
+			    }
+			});
+			if (!ret.trainSuccess){
+				 $('#myResult').append("<em>***Training failed***</em>");
+				return;
+			}
+			/////////////////////////////////////// 			
+ 		}else{
+ 			//////////////////////////////////						 
+	        //THIS LINE DOES ALL THE HARD WORK
+	        var ret = TRACX.stepThroughTraining(steps,function(importance, message) {
+			    // this anonymous function will run when the progress callback is called
+			    if (importance > 0){
+				    $('#myResult').append(message);
+			    }else{
+			    	$('#extraInfo').append(message);
+			    }
+			});
+			if (!ret.trainSuccess){
+				 $('#myResult').append("<em>***Training failed***</em>");
+				return;
+			}
+ 		}
+		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: " + TRACX.getCurrentStep() + "</em>");
+
+ 		//clear the old graphs
+ 		$('#chartOutputError').empty();  
+		$('#chartTrackLearning').empty();  
 		var graphVals = [];
     	$('#myResult').append("<br/><em>Testing:</em><br/>");
         $('#myResult').append("Words :" + $("#testWords").val() + "<br/>");
@@ -343,28 +417,37 @@
        		$('#myResult').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
-		console.log($("#graphResults").val());
-       	if ($("#graphResults").val()){
+		console.log($("#graphResults").is(':checked'));
+       	if ($("#graphResults").is(':checked')){
 	      	plotBarGraph(graphVals);
 	      	if($("#trackingFlag").val()){
 	      		plotLearning(ret.trackingSteps, ret.trackingOutputs);
 	      	}
        	}
-    }
-    catch(err){
-		$('#myResult').append("Calculation error: " + err.message);
-    }    
+       	plotActivations('ab');
+       	//allow show/hide the extra information coming back from tracx.js 
+		//$(".collapsibleContainer").collapsiblePanel();
+       	
+    // }
+    // catch(err){
+		// $('#myResult').append("Calculation error: " + err.message);
+    // }    
     }
 	//add a click event to the calculate button
- 	$('#calculate').click(handleCalculate);
-      
+ 	$('#initialize').click(initialiseNetwork);
+ 	$('#calculate').click(function() {handleCalculate(-1);});
+ 	$('#stepPlus1').click(function() {handleCalculate(1);});
+ 	$('#stepPlus1percent').click(function() {handleCalculate("1%");});
+ 	$('#stepPlus10').click(function() {handleCalculate(10);});
+ 	$('#stepPlus10percent').click(function() {handleCalculate("10%");});
+ 	      
 	function plotBarGraph(WordErrorScores){
 	try{
 	    // Can specify a custom tick Array.
 	    // Ticks should match up one for each y value (category) in the series.
 	    var ticks = ['Test Items'];
-	    $('chart1').empty();  
-	    var plot1 = $.jqplot('chart1', WordErrorScores, {
+	    $('chartOutputError').empty();  
+	    var plot1 = $.jqplot('chartOutputError', WordErrorScores, {
 	    	  // Give the plot a title.
 			  title: 'Mean error scores per test item type',
 	        // The "seriesDefaults" option is an options object that will
@@ -407,7 +490,7 @@
 	    }
     catch(err){
 		$('#myResult').append("Graphing error: " + err.message);
-    }    
+    }     
 	}
 	
 	function plotLearning(trackingSteps, trackingOutputs){
@@ -417,41 +500,139 @@
 			serieslabels.push({label:x});
 			seriesdata.push(trackingOutputs[x]);
 		}
-	    var plot2 = $.jqplot ('chart2',seriesdata, {
+	    var plot2 = $.jqplot ('chartTrackLearning',seriesdata, {
 			  // Give the plot a title.
 			  title: 'Bigram error over time',
-			  // You can specify options for all axes on the plot at once with
-			  // the axesDefaults object.  Here, we're using a canvas renderer
-			  // to draw the axis label which allows rotated text.
 			  axesDefaults: {
 			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 			  },
-	  	        // Show the legend and put it inside the grid
-		        legend: {
+ 	          legend: {
 		            show: true,
 		            placement: 'outsideGrid'
-		        },
-			   series:serieslabels,
-			  // An axes object holds options for all axes.
-			  // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
-			  // Up to 9 y axes are supported.
+		      },
+			  series:serieslabels,
 			  axes: {
-			    // options for each axis are specified in seperate option objects.
-			xaxis: {
-			  label: "Number  of training items",
-  			  labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-			  ticks: trackingSteps,
-			  // Turn off "padding".  This will allow data point to lie on the
-			  // edges of the grid.  Default padding is 1.2 and will keep all
-			  // points inside the bounds of the grid.
-			  pad: 0
-			},
-			yaxis: {
-			  label: "Mean Error",
-			  labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-			    }
-			}
+			  	xaxis: {
+			 		label: "Number  of training items",
+  			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+			  		ticks: trackingSteps,
+			  		pad: 0
+					},
+				yaxis: {
+			  		label: "Mean Error",
+			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+			    	}
+				}
 	    });
+    }
+    //mini bar graphs of the input, hidden and output activations for this step.
+    function plotActivations(bigram){
+    	if (!TRACX){
+    		return;
+    	}
+    	$('chartInput1').empty();  
+    	$('chartInput2').empty();  
+    	$('chartHidden').empty();  
+    	$('chartOutput1').empty();  
+    	$('chartOutput2').empty();  
+	    ret = TRACX.testString(bigram);
+	    
+	    var plotInput1 = $.jqplot('chartInput1', ret.activations.In.elements, 
+	    	{	title: 'Input 1',
+	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
+	        	legend: {show: false},
+	        	axes: {
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+	            },
+	            yaxis: {
+					min:-1.05,
+	                max:1.05,
+	                pad: 1.05,
+	   				label: "Activation",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
+	        	}
+	    	});
+	    var plotInput2 = $.jqplot('chartInput2', ret.activations.In.elements, 
+	    	{	title: 'Input 2',
+	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
+	        	legend: {show: false},
+	        	axes: {
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+	            },
+	            yaxis: {
+					min:-1.05,
+	                max:1.05,
+	                pad: 1.05,
+	   				label: "Activation",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
+	        	}
+	    	});
+	    var plotHidden = $.jqplot('chartHidden', ret.activations.Hid.elements, 
+	    	{	title: 'Hidden',
+	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
+	        	legend: {show: false},
+	        	axes: {
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+	            },
+	            yaxis: {
+					min:-1.05,
+	                max:1.05,
+	                pad: 1.05,
+	   				label: "Activation",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
+	        	}
+	    	});
+	   	var plotOutput1 = $.jqplot('chartOutput1', ret.activations.Out.elements, 
+	    	{	title: 'Output 1',
+	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
+	        	legend: {show: false},
+	        	axes: {
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+	            },
+	            yaxis: {
+					min:-1.05,
+	                max:1.05,
+	                pad: 1.05,
+	   				label: "Activation",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
+	        	}
+	    	});
+	   var plotOutput2 = $.jqplot('chartOutput2', ret.activations.Out.elements, 
+	    	{	title: 'Output 2',
+	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
+	        	legend: {show: false},
+	        	axes: {
+	            xaxis: {
+	                renderer: $.jqplot.CategoryAxisRenderer,
+	                label: 'Item Types',
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+	            },
+	            yaxis: {
+					min:-1.05,
+	                max:1.05,
+	                pad: 1.05,
+	   				label: "Activation",
+					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+   		            }
+	        	}
+	    	});
+	    	
     }
 	</script>
 
