@@ -16,10 +16,11 @@ var TRACX = (function () {
     
     //private variables
     var trainingData,userEncodings, inputEncodings,
+   		lastDelta, //used in training 
    		weightsInputToHidden, weightsHiddenToOutput, //weight matrices
    		OLD_deltaWeightsInputToHidden, OLD_deltaWeightsHiddenToOutput,  //old matrices for momentum calc
    		testWords, testPartWords, testNonWords, //test items
-    	trackingFlag, trackingBigrams, trackingInterval, trackingSteps, trackingResults; //tracking Learning
+    	batchMode,trackingFlag, trackingBigrams, trackingInterval, trackingSteps, trackingResults; //tracking Learning
    	
     //default parameters
     var params = {
@@ -35,7 +36,7 @@ var TRACX = (function () {
 	};
     
     //variables for stting through
-	var currentStep, maxSteps,startSimulation, net, testResults;
+	var currentStep, maxSteps,inputLength,startSimulation, net, testResults;
      
     API.setParameters = function (parameters) { 
         params = parameters;
@@ -51,6 +52,9 @@ var TRACX = (function () {
     };
     API.setTrainingData = function (TrainingData) {
 		trainingData = TrainingData;
+    };
+    API.getTrainingData = function () {
+		return trainingData;
     };
     API.setTestData = function (testData) {
 		testWords=testData.Words;
@@ -86,6 +90,14 @@ var TRACX = (function () {
    	API.getInputEncoding = function(letter){
    		return inputEncodings[letter];	
    	}
+   	//returns the last n traiing items up to currentStep;
+	API.getLastTrainingItems = function(n){
+		var trainingString = '';
+		for(var i=n;i>0;i--){
+			trainingString += trainingData[(currentStep-i)%inputLength];
+		}
+		return trainingString;
+	}
    
     function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
@@ -155,8 +167,8 @@ var TRACX = (function () {
 		var temp2 = Matrix.Random(N+1,2*N).multiply(-1);
 		weightsHiddenToOutput = Matrix.Random(N+1,2*N).add(temp2);
        //remove matrices for momemtum weights too
-        OLD_deltaWeightsInputToHidden = null;
-        OLD_deltaWeightsHiddenToOutput = null;
+        OLD_deltaWeightsInputToHidden = false;
+        OLD_deltaWeightsHiddenToOutput = false;
 	};
 	
 	//sum up the elements of array
@@ -314,20 +326,19 @@ var TRACX = (function () {
 			//
 			// the main training loop
 	        while (currentStep< untilStep){
-				currentStep++;
 				// progressCallback(1,'.');
 				//read and encode the first bit of training data
 				var Input_t1, Input_t2;	
-				if (net.Delta < params.recognitionCriterion){
+				if (lastDelta < params.recognitionCriterion){
 					//new input is hidden unit representation
 					Input_t1 = net.Hid.elements[0];
 					//not including bias
 					Input_t1.length = Input_t1.length -1;
 				}else{
 					//input is next training item
-					Input_t1 = inputEncodings[trainingData[i]];
+					Input_t1 = inputEncodings[trainingData[currentStep%inputLength]];
 				}
-				Input_t2 = inputEncodings[trainingData[i+1]];
+				Input_t2 = inputEncodings[trainingData[(currentStep+1)%inputLength]];
 
 				net = API.networkOutput(Input_t1,Input_t2);
 				
@@ -335,13 +346,14 @@ var TRACX = (function () {
 				// do a learning pass 25% of the time, since internal representations,
 				// since internal representations are attentionally weaker than input
 				// from the real, external world.
-				if ((net.Delta > params.recognitionCriterion) //train netowrk if error large
+				if ((lastDelta > params.recognitionCriterion) //train netowrk if error large
 				 || (Math.random() <= params.reinforcementThreshold))//or if small error and below threshold
 				 {
 					backPropogateError(net);
 					net = API.networkOutput(Input_t1,Input_t2);
 				}
-				if (trackingFlag && currentStep%trackingInterval == 1){
+				lastDelta = net.Delta;
+				if (!batchMode && trackingFlag && currentStep%trackingInterval == 1){
 					trackingSteps.push(currentStep);
 					//if tracking turned on we test the network 
 					//at fixed intervals with a set of test bigrams
@@ -350,6 +362,7 @@ var TRACX = (function () {
 						trackingResults[trackingBigrams[x]].push([currentStep, ret.meanDelta]);
 					}
 				}
+				currentStep++;			
 			}
 			return true;
 	    }
@@ -365,17 +378,17 @@ var TRACX = (function () {
      * pass a comma seperated list of test words, it
      * tests each one returning deltas and mean delta
      */
-    API.testStrings = function (testStrings) { 
-		var testString = testStrings.split(",");
+    API.testStrings = function (testItems) { 
+		var testItem = testItems.split(",");
 		var deltas = [];
 		var toterr = 0;
 		var wordcount = 0;
-		for(w in testString){
-			if (testString[w].length>1){
-		    	ret = TRACX.testString(testString[w]);
+		for(w in testItem){
+			if (testItem[w].length>1){
+		    	ret = TRACX.testString(testItem[w]);
 		    	toterr += ret.totalDelta;
 		    	wordcount++; 
-		    	deltas.push(toterr.toFixed(3));
+		    	deltas.push(ret.totalDelta.toFixed(3));
 			}
 		}
 		if (wordcount > 0){
@@ -396,16 +409,22 @@ var TRACX = (function () {
 	  		var net = {Delta: 500};
 	  		var delta = [];
 	  		var totDelta = 0;
+	  		var input1Hidden = false;
 	  		for(var i=0; i<len-1;i++){
 	  			if (net.Delta < params.recognitionCriterion){
 					//new input is hidden unit representation
-					Input_t1 = net.Hidnet.Hid.elements[0];
+					Input_t1 = net.Hid.elements[0];
+					//not including bias
+					Input_t1.length = Input_t1.length -1;
+					input1Hidden = true;	
 				}else{
 					//input is next training item
 					Input_t1 = inputEncodings[inString[i]];
+					input1Hidden = false;	
 				}
 				Input_t2 = inputEncodings[inString[i+1]];
 				net = API.networkOutput(Input_t1,Input_t2);
+				net.Input1Hidden = input1Hidden;
 				delta.push(net.Delta);
 				totDelta += net.Delta;
 			}
@@ -428,7 +447,8 @@ var TRACX = (function () {
   		
   		startSimulation = new Date();
   		currentStep = 0;
-  		maxSteps = params.sentenceRepetitions * (trainingData.length -1);
+  		inputLength = trainingData.length -1;
+  		maxSteps = params.sentenceRepetitions * inputLength;
   		if (progressCallback){
   			progressCallback(1,"Simulation started: " + startSimulation.toLocaleTimeString() + "<br/>");
   		}
@@ -450,11 +470,15 @@ var TRACX = (function () {
 	        }
 	    }
 
-		progressCallback('Subjects: ');
+		progressCallback(1, 'Subjects: ');
 		//loop round with a new network each time
 	 	for (var run_no=0; run_no<params.numberSubjects;run_no++){
-			currentStep == 0;
-  			net = {Delta: 500};  // some very big delta to start with
+		    if (run_no < params.numberSubjects){
+		    	//in batchmode we only track results of last participant
+		    	batchMode = true;
+		    }
+			currentStep = 0;
+  			lastDelta = 500; // some very big delta to start with
 	  		API.initializeWeights();
 			if (progressCallback){
   				progressCallback(1,(1 + run_no) + ",");
@@ -485,6 +509,7 @@ var TRACX = (function () {
 		       	}		    	
 	       	}		
 	    }
+	    batchMode = false;
 	    if (testResults.Words.all.length>0){
 			testResults.Words.mean = mean(testResults.Words.all);
 	    	testResults.Words.sd = stdev(testResults.Words.all);
@@ -516,16 +541,18 @@ var TRACX = (function () {
   	 * what is going on.
   	 */
   	API.stepThroughTraining = function(stepSize, progressCallback){
+  		batchMode = false;
   		if (!currentStep || currentStep < 0){
   			//initialize things
   			startSimulation = new Date();
 	  		if (progressCallback){
 	  			progressCallback(1,"Simulation started: " + startSimulation.toLocaleTimeString() + "<br/>");
 	  		}
-	  		currentStep = 0;
-  			net = {Delta: 500};  // some very big delta to start with
+	  		lastDelta = 500;  // some very big delta to start with
 	  		API.initializeWeights();
-			maxSteps = params.sentenceRepetitions * (trainingData.length -1);
+			currentStep = 0;
+  			inputLength = trainingData.length -1;
+  			maxSteps = params.sentenceRepetitions * inputLength;
   			if (progressCallback){
   				progressCallback(1, "Stepping through once,");
 				progressCallback(0,"Stepping through once <br/>");
@@ -534,14 +561,6 @@ var TRACX = (function () {
 				progressCallback(0,'<br/>Hidden to Output<br/>');
 				progressCallback(0,weightsHiddenToOutput.inspect());
 			}	
-	  		//set up the object to store results
-	  		testResults = {	trainSuccess:	false,
-  						   	elapsedTime:	-1,
-  						   	Words:			{mean:-1,sd:-1,all:[]},
-  							PartWords:		{mean:-1,sd:-1,all:[]},
-  							NonWords:		{mean:-1,sd:-1,all:[]},
-  							trackingSteps:	null,
-  							trackingOutputs:null};
 	        if (trackingFlag){
 				//initialise stacked array to store tracking data
 	    		trackingResults = [];
@@ -551,6 +570,14 @@ var TRACX = (function () {
 		        }
 		    }
   		}
+  		//set up the object to store results
+  		testResults = {	trainSuccess:	false,
+					   	elapsedTime:	-1,
+					   	Words:			{mean:-1,sd:-1,all:[]},
+						PartWords:		{mean:-1,sd:-1,all:[]},
+						NonWords:		{mean:-1,sd:-1,all:[]},
+						trackingSteps:	null,
+						trackingOutputs:null};	
   		//convert percentage based step sizes
   		if (!isNumber(stepSize) && stepSize.indexOf("%")>0){
   			stepSize= 0.01 * maxSteps * parseFloat(stepSize);
@@ -559,24 +586,24 @@ var TRACX = (function () {
 		// progressCallback(1, 'Subjects: ');
 		// //loop round with a new network each time
 	 	// for (var run_no=0; run_no<params.numberSubjects;run_no++){
-			if(API.trainNetwork(stepSize, progressCallback)){
-				//training worked for this subject
-				testResults.trainSuccess =true;
-				/////////////////////////////////// ////
-				//TESTING THE NETWORK
-				var	ret = TRACX.testStrings(testWords );
-				if (ret.meanDelta){			
-			    	testResults.Words.all.push(ret.meanDelta);
-			   	}
-				ret =  TRACX.testStrings(testPartWords );
-		    	if (ret.meanDelta){			
-			    	testResults.PartWords.all.push(ret.meanDelta);			        
-		       	}
-				ret =  TRACX.testStrings(testNonWords );
-		    	if (ret.meanDelta){			
-			    	testResults.NonWords.all.push(ret.meanDelta);			        
-		       	}		    	
-	       	}		
+		if(API.trainNetwork(stepSize, progressCallback)){
+			//training worked for this subject
+			testResults.trainSuccess =true;
+			/////////////////////////////////// ////
+			//TESTING THE NETWORK
+			var	ret = TRACX.testStrings(testWords );
+			if (ret.meanDelta){			
+		    	testResults.Words.all.push(ret.meanDelta);
+		   	}
+			ret =  TRACX.testStrings(testPartWords );
+	    	if (ret.meanDelta){			
+		    	testResults.PartWords.all.push(ret.meanDelta);			        
+	       	}
+			ret =  TRACX.testStrings(testNonWords );
+	    	if (ret.meanDelta){			
+		    	testResults.NonWords.all.push(ret.meanDelta);			        
+	       	}		    	
+       	}		
 	    // }
 	    if (testResults.Words.all.length>0){
 			testResults.Words.mean = mean(testResults.Words.all);
@@ -593,8 +620,8 @@ var TRACX = (function () {
 	    var end = new Date();
 	    testResults.elapsedTime = (end.getTime() - startSimulation.getTime())/1000;
 	    if (progressCallback){
-  			progressCallback(1,"Simulation finished: " + end.toLocaleTimeString() + "<br/>");
-  			progressCallback(1,"Duration: " + testResults.elapsedTime.toFixed(3) + " secs.<br/>");
+  			progressCallback(0,"Simulation finished: " + end.toLocaleTimeString() + "<br/>");
+  			progressCallback(0,"Duration: " + testResults.elapsedTime.toFixed(3) + " secs.<br/>");
   		}
 	    if (trackingFlag){
 	    	testResults.trackingSteps = trackingSteps;

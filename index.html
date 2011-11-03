@@ -41,116 +41,145 @@
       <h1>TRACX simulator</h1> 
     </header>
     <form id="LearnParams">
-    	<fieldset><legend>Step 1 - Choose data:</legend>
-    	<h3>Training data</h3>
-    	<label for="stored">Existing dataset</label>
-        <select id="simulationSelect">
-        	<option>1. Saffran et al., 1996</option>
-        	<option>2. Aslin et al., 1998</option>
-        	<option>3. Perruchet &amp; Desaulty, 2008 (Forward TPs)</option>
-        	<option>4. Perruchet &amp; Desaulty, 2008 (Backward TPs)</option>
-        	<option>5. #NA# Giroux &amp; Rey, 2009</option>
-        	<option>6. #NA# Frank et al., 2010 -  Experiment 1</option>
-        	<option>7. #NA# Frank et al., 2010 -  Experiment 3</option>
-        	<option>8. #NA# Brent &amp; Cartwright, 1996,</option>
-        	<option>9 &amp; 10 - Not available </option>
-        	<option>11. French, Addyman &amp; Mareschal, 2011 </option>
-        	<option selected="selected">12. Kirkham,Slemmer &amp; Johnson, 2012 </option>
-        	
-        </select>        
-        <label for="dataselection">Or select file</label>
-     <input type="file" id="userDataFiles" multiple />
-<output id="trainingstring"></output><br/>
-<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br/>
-<em>Each training sentence should begin on a new line.</em>
-
-<h3>Test items</h3>
-<table summary="Test items"><tr>
-	<td>Words:</td>
-	<td><textarea id="testWords" class="required" rows="1" cols="50">ab,cd,ef</textarea></td>
-</tr><tr>
-	<td>Part Words:</td>
-	<td><textarea id="testPartWords"  rows="1" cols="50">bc,de,fa</textarea></td>
-</tr><tr>
-	<td>Non Words:</td>
-	<td><textarea id="testNonWords" rows="1" cols="50">ad,bf,fd</textarea></td>
-</tr>
-</table><br/>
-
-<h3>Track learning</h3>     	<input type="checkbox" id="trackingFlag" checked="unchecked"/> Track<br/>
-
-<table summary="Track learning"><tr>
-	<td>Test bigrams:</td>
-	<td><textarea id="trackingBigrams" class="required" rows="1" cols="50">ab,ad</textarea></td>
-</tr><tr>
-	<td>Test network every N steps:</td>
-	<td><textarea id="trackingInterval"  rows="1" cols="50">10</textarea></td>
-</table><br/>
-<em>Test items should be seperated by commas.</em>
-<div id="debug"></div>
-</fieldset>
-    <fieldset id="paramsform">
-        <legend>Step 2: Set Network Parameters</legend>
-        <table summary="Network Parameters">
-            <tr>
-                <td>Learning Rate</td>
-                <td> <input type="text" id="learningRate" class="required"  value="0.04"/></td>
-            </tr><tr>
-                <td>Recognition Criterion</td>
-                <td><input type="text" id="recognitionCriterion" class="required"  value="0.4"/></td></tr>
-            <tr>
-                <td>Reinforcement Threshold</td>
-                <td><input type="text" id="reinforcementThreshold" class="required" value="0.25"/></td></tr>
-            <tr>
-                <td>Momentum </td><td><input type="text" id="momentum" class="required" value="0.0"/></td></tr>
-            <tr>
-                <td>Sentence repetitions</td><td><input type="text" id="sentenceRepetitions" class="required" value="1"/></td></tr>
-            <tr>
-                <td>Number of subjects</td><td><input type="text" id="numberSubjects" class="required" value="1"/></td></tr>
-            <tr>
-                <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td></tr>
-            <tr>
-                <td>Fahlman Offset</td><td><input type="text" id="fahlmanOffset" class="required" value="0.1"/></td></tr>
-            <tr>
-                <td>Bias value</td>
-                <td><input type="text" id="bias" class="required" title="Bias" value="-1"/></td>
-            </tr>
-        </table>
+    	<table><tr><td>
+	    	<fieldset><legend>Step 1 - Choose Training data:</legend>
+	    	<label for="stored">Existing dataset</label>
+	        <select id="simulationSelect">
+	        	<option>1. Saffran et al., 1996</option>
+	        	<option>2. Aslin et al., 1998</option>
+	        	<option>3. Perruchet &amp; Desaulty, 2008 (Forward TPs)</option>
+	        	<option>4. Perruchet &amp; Desaulty, 2008 (Backward TPs)</option>
+	        	<option>5. #NA# Giroux &amp; Rey, 2009</option>
+	        	<option>6. #NA# Frank et al., 2010 -  Experiment 1</option>
+	        	<option>7. #NA# Frank et al., 2010 -  Experiment 3</option>
+	        	<option>8. #NA# Brent &amp; Cartwright, 1996,</option>
+	        	<option>9 &amp; 10 - Not available </option>
+	        	<option>11. French, Addyman &amp; Mareschal, 2011 </option>
+	        	<option selected="selected">12. Kirkham,Slemmer &amp; Johnson, 2002 </option>        	
+	        </select>        
+	        <label for="dataselection">Or select file</label>
+	     	<input type="file" id="userDataFiles" multiple /><br/>
+			<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br/>
+			<em>Each training sentence should begin on a new line.</em>
+		</fieldset>
+	</td><td>
+		<fieldset id="paramsform">
+	    <legend>Step 2: Set Network Parameters</legend>
+	    <table summary="Network Parameters">
+	        <tr>
+	            <td>Learning Rate</td>
+	            <td> <input type="text" id="learningRate" class="required"  value="0.04"/></td>
+	        </tr><tr>
+	            <td>Recognition Criterion</td>
+	            <td><input type="text" id="recognitionCriterion" class="required"  value="0.4"/></td></tr>
+	        <tr>
+	            <td>Reinforcement Threshold</td>
+	            <td><input type="text" id="reinforcementThreshold" class="required" value="0.25"/></td></tr>
+	        <tr>
+	            <td>Momentum </td><td><input type="text" id="momentum" class="required" value="0.0"/></td></tr>
+	        <tr>
+	            <td>Sentence repetitions</td><td><input type="text" id="sentenceRepetitions" class="required" value="1"/></td></tr>
+	        <tr>
+	            <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td></tr>
+	        <tr>
+	            <td>Fahlman Offset</td><td><input type="text" id="fahlmanOffset" class="required" value="0.1"/></td></tr>
+	        <tr>
+	            <td>Bias value</td>
+	            <td><input type="text" id="bias" class="required" title="Bias" value="-1"/></td>
+	        </tr>
+	    </table>
 	</fieldset>
-    </form>
+</td></tr></table>
+</form>
     <fieldset>
-        <legend>Step 3: Run Simulator</legend>	
-		<p id="currentStep"><em>Training Step 0</em></p>
-    	<input type="button" id="initialize" value="Reset" />
-    	<input type="button" id="stepPlus1" value="Step +1" />
-    	<input type="button" id="stepPlus1percent" value="Step +1%" />
-    	<input type="button" id="stepPlus10" value="Step +10" />
-    	<input type="button" id="stepPlus10percent" value="Step +10%" />
-		<input type="button" id="calculate" value="Run.." /><br/>
+		        <legend>Step 3: Run Simulator</legend>	
+				
+	    <table>
+	    	<tr><td>
+			    <fieldset>
+					<legend id="currentStep">Training Step 0</legend>
+			    	<input type="button" id="reset" value="Reset" />
+			    	<input type="button" id="stepPlus1" value="Step +1" />
+			    	<input type="button" id="stepPlus1percent" value="Step +1%" />
+			    	<input type="button" id="stepPlus10" value="Step +10" />
+			    	<input type="button" id="stepPlus10percent" value="Step +10%" />
+					<input type="button" id="calculate" value="Run.." />
+		    	</fieldset>	    		
+	    	</td>
+	    	<td>
+		    	<fieldset>
+					<legend>Batch Mode</legend>
+					Number of subjects:<input type="text" id="numberSubjects" class="required" value="1"/>
+					<input type="button" id="batchRun" value="Run.." />
+		    	</fieldset>
+	    	</td></tr>
+	    </table>
+
+
     	<input type="checkbox" id="graphResults" checked="checked"/> Graph outputs   
 		<input type="checkbox" id="graphActivations" checked="checked"/> Graph activations<br/>
-		<div id="myResult"></div>
+		<div id="mySummary"></div>
 		<div class="collapsibleContainer" title="Tracx internal parameters (click to show/hide)">
 			<div id="extraInfo">The internal parameters used by the network will appear here. </div>
 		</div>
-		<fieldset><legend>Graphic Output</legend>	
-	<div id="chartOutputError" style="height:400px;width:600px "></div>
-	<div id="chartTrackLearning" style="height:400px;width:600px "></div>
-	</fieldset>
-		<fieldset><legend>Network Activations</legend>
-			<table><tr>
-					<td><div id="chartInput1" style="height:150px;width:240px ">INPUT 1</div></td>
-					<td><div id="chartInput2" style="height:150px;width:240px ">INPUT 2</div></td>
-				</tr>
-				<tr>
-					<td align="center" colspan="2"><div id="chartHidden" style="height:150px;width:240px ">HIDDEN</div></td>
-				</tr>
-				<tr>
-					<td><div id="chartOutput1" style="height:150px;width:240px ">OUTPUT 1</div></td>
-					<td><div id="chartOutput2" style="height:150px;width:240px ">OUTPUT 2</div></td>
-				</tr>
-			</table>
-		</fieldset>
+		<div class="collapsibleContainer" title="Tracx results output (click to show/hide)">
+			<div id="myResults">Results from network at this point in training</div>
+		</div>
+		<!-- A table to hold all the output graphs -->
+		<table><tr>
+			<td>
+				<fieldset><legend>Network Activations</legend>
+					<table><tr>
+							<td><div id="chartOutput1" style="height:150px;width:240px "></div></td>
+							<td><div id="chartOutput2" style="height:150px;width:240px "></div></td>
+						</tr>
+						<tr>
+							<td align="center" colspan="2"><div id="chartHidden" style="height:150px;width:240px "></div></td>
+						</tr>
+						<tr>
+							<td><div id="chartInput1" style="height:150px;width:240px "></div></td>
+							<td><div id="chartInput2" style="height:150px;width:240px "></div></td>
+						</tr>
+						
+					</table>
+				</fieldset>
+			</td>
+			<td>		
+				<fieldset><legend>Network Error</legend>	
+<table>
+	<tr>
+		<td colspan = 3>					
+			<div id="chartOutputError" style="height:230px;width:400px "></div>
+		</td>
+	</tr>
+	<tr>
+	<td>Words:</td>	<td>Part Words:</td>	<td>Non Words:</td>
+</tr>
+
+	<td><input id="testWords" class="required" value="ab,cd,ef"></input></td>
+	<td><input id="testPartWords"  rows="1" cols="50" value="bc,de,fa"></input></td>
+	<td><input id="testNonWords" rows="1" cols="50" value="ad,bf,fd"></input></td>
+</tr>
+	<tr>
+		<td colspan = 3>	
+			<div id="chartTrackLearning" style="height:230px;width:400px "></div>
+		</td>
+	</tr>
+	<tr>
+		<td>Test bigrams..</td>	<td>..every N steps:</td><td>On/Off</td>
+	</tr>
+	<tr>
+		<td><input id="trackingBigrams" class="required"  value="ab,ad"></input></td>
+		<td><input id="trackingInterval"  value="25"></input></td>
+		<td><input type="checkbox" id="trackingFlag" checked="unchecked"/></td>
+			
+</tr></table><br/>
+<em>Test items should be seperated by commas.</em>
+
+
+				</fieldset>
+			</td>
+		</tr></table>
 	</fieldset>
 
 		
@@ -224,7 +253,36 @@
 	    	content: 'Bias node activation - An node with this activation is always added to the set of inputs and to the set of hidden units.<br/><em>Default: -1</em>',
 	    	style: 'cream'
 		});
+		$('#reset').qtip({
+	    	content: 'Reset all training.',
+	    	style: 'cream'
+		});
+		$('#stepPlus1').qtip({
+	    	content: 'Move one step further through the training data.',
+	    	style: 'cream'
+		});
+		$('#stepPlus1Percent').qtip({
+	    	content: 'Move one percent further through the training data.',
+	    	style: 'cream'
+		});
+		$('#stepPlus10').qtip({
+	    	content: 'Move ten steps further through the training data.',
+	    	style: 'cream'
+		});
+		$('#stepPlus10Percent').qtip({
+	    	content: 'Move ten percent further through the training data.',
+	    	style: 'cream'
+		});
 		$('#calculate').qtip({
+	    	content: 'Run to the end of one full pass through the training set.',
+	    	style: 'cream'
+		});
+		$('#calculate').qtip({
+	    	content: 'Run to the end of one full training set.',
+	    	style: 'cream'
+		});
+
+		$('#batchRun').qtip({
 	    	content: 'For each subject we create a new untrained network by randomly initialising a new set of weights matrices. We train this network on the training data and then test with each of the word, part-word and non-word stimuli. Progress is shown below and mean results are plotted graphically.',
 	    	style: 'cream'
 		});
@@ -261,6 +319,7 @@
 //		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","giroux","frank1","frank3","brent","notavailable","notavailable","french","kirkham"];
 		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","notavailable","notavailable","notavailable","notavailable","notavailable","notavailable","french","kirkham"];
 		sendValue(simulationName[simulationNumber]);	
+		initialiseNetwork();
 	});
 	
 
@@ -293,25 +352,34 @@
         
    	function initialiseNetwork(){
    		if (TRACX === null){
- 			$('#myResult').html("Tracx Simulator not found, try reloading the page or contact us");
+ 			$('#mySummary').html("Tracx Simulator not found, try reloading the page or contact us");
  			return;
  		}else{
- 			$('#myResult').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br/>");
+ 			$('#mySummary').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br/>");
  		}
  		if ($("#trainingData").val().length < 2){
- 			$('#myResult').append("Please provide some training data.<br/>");
+ 			$('#mySummary').append("Please provide some training data.<br/>");
  			return;
  		}
  		//clear the old graphs
- 		$('#chartOutputError').empty();  
+ 			$('#chartOutputError').empty();  
 		$('#chartTrackLearning').empty();  
-		$('#myResult').append("Loading training data...<br/>");
+		$('#chartInput1').empty();  
+		$('#chartInput2').empty();  
+		$('#chartHidden').empty();  
+ 		$('#chartOutput1').empty();  
+		$('#chartOutput2').empty();  
+
+
+		$('#mySummary').append("Loading training data...<br/>");
 		TRACX.setTrainingData($("#trainingData").val());
 		//fill in the params from input form
 		var networkParams = {};
 		$('#paramsform input').each(function(index) {
 			networkParams[this.id] = parseFloat($(this).val());
 		});
+		//and the number of subjects for batch mode
+		networkParams.numberSubjects = parseFloat($('#numberSubjects').val());
 		TRACX.setParameters(networkParams);
 		$('#extraInfo').html("<em>Network Parameters</em><br/>");
 		$('#extraInfo').append(JSON.stringify(networkParams) + "<br/>");
@@ -347,42 +415,43 @@
 	console.log('handleCalculate');	
  	// try{
  		if (TRACX === null){
- 			$('#myResult').html("Tracx Simulator not found, try reloading the page or contact us");
+ 			$('#mySummary').html("Tracx Simulator not found, try reloading the page or contact us");
  			return;
  		}
- 		if (!TRACX.getCurrentStep() || TRACX.getCurrentStep() < 0 ){
-	 		initialiseNetwork();
- 		}
- 		
- 		if (steps < 0){
+ 		if (steps === -1000){
 	 		//////////////////////////////////						 
+	      	/////// BATCH MODE ///////////////
+	      	initialiseNetwork();
 	        //THIS LINE DOES ALL THE HARD WORK
 	        var ret = TRACX.runFullSimulation(function(importance, message) {
 			    // this anonymous function will run when the progress callback is called
 			    if (importance > 0){
-				    $('#myResult').append(message);
+				    $('#mySummary').append(message);
 			    }else{
 			    	$('#extraInfo').append(message);
 			    }
 			});
 			if (!ret.trainSuccess){
-				 $('#myResult').append("<em>***Training failed***</em>");
+				 $('#mySummary').append("<em>***Training failed***</em>");
 				return;
 			}
 			/////////////////////////////////////// 			
  		}else{
+	 		if (!TRACX.getCurrentStep() || TRACX.getCurrentStep() < 0 ){
+		 		initialiseNetwork();
+ 			}
  			//////////////////////////////////						 
 	        //THIS LINE DOES ALL THE HARD WORK
 	        var ret = TRACX.stepThroughTraining(steps,function(importance, message) {
 			    // this anonymous function will run when the progress callback is called
 			    if (importance > 0){
-				    $('#myResult').append(message);
+				    $('#myResults').append(message);
 			    }else{
 			    	$('#extraInfo').append(message);
 			    }
 			});
 			if (!ret.trainSuccess){
-				 $('#myResult').append("<em>***Training failed***</em>");
+				 $('#myResults').append("<em>***Training failed***</em>");
 				return;
 			}
  		}
@@ -391,30 +460,36 @@
  		//clear the old graphs
  		$('#chartOutputError').empty();  
 		$('#chartTrackLearning').empty();  
+		$('#chartInput1').empty();  
+		$('#chartInput2').empty();  
+		$('#chartHidden').empty();  
+ 		$('#chartOutput1').empty();  
+		$('#chartOutput2').empty();  
+
 		var graphVals = [];
-    	$('#myResult').append("<br/><em>Testing:</em><br/>");
-        $('#myResult').append("Words :" + $("#testWords").val() + "<br/>");
+    	$('#myResults').append("<br/><em>Testing:</em><br/>");
+        $('#myResults').append("Words :" + $("#testWords").val() + "<br/>");
 		if (ret.Words.mean){			
-	    	$('#myResult').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br/>");
+	    	$('#myResults').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br/>");
 	        graphVals.push([ret.Words.mean]);
        	}else{
-       		$('#myResult').append("-<br/>");
+       		$('#myResults').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
-        $('#myResult').append("Part Words :" + $("#testPartWords").val() + "<br/>");
+        $('#myResults').append("Part Words :" + $("#testPartWords").val() + "<br/>");
     	if (ret.PartWords.mean){			
-	    	$('#myResult').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br/>");
+	    	$('#myResults').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br/>");
 	        graphVals.push([ret.PartWords.mean]);
        	}else{
-       		$('#myResult').append("-<br/>");
+       		$('#myResults').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
-        $('#myResult').append("Non Words :" + $("#testNonWords").val() + "<br/>");
+        $('#myResults').append("Non Words :" + $("#testNonWords").val() + "<br/>");
     	if (ret.NonWords.mean){			
-	    	$('#myResult').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br/>");
+	    	$('#myResults').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br/>");
 	        graphVals.push([ret.NonWords.mean]);
        	}else{
-       		$('#myResult').append("-<br/>");
+       		$('#myResults').append("-<br/>");
 	        graphVals.push([0]);      	
        	}
 		console.log($("#graphResults").is(':checked'));
@@ -424,7 +499,9 @@
 	      		plotLearning(ret.trackingSteps, ret.trackingOutputs);
 	      	}
        	}
-       	plotActivations('ab');
+       	
+       	var currentString = TRACX.getLastTrainingItems(4);
+       	plotActivations(currentString);
        	//allow show/hide the extra information coming back from tracx.js 
 		//$(".collapsibleContainer").collapsiblePanel();
        	
@@ -434,12 +511,13 @@
     // }    
     }
 	//add a click event to the calculate button
- 	$('#initialize').click(initialiseNetwork);
- 	$('#calculate').click(function() {handleCalculate(-1);});
+ 	$('#reset').click(initialiseNetwork);
  	$('#stepPlus1').click(function() {handleCalculate(1);});
  	$('#stepPlus1percent').click(function() {handleCalculate("1%");});
  	$('#stepPlus10').click(function() {handleCalculate(10);});
  	$('#stepPlus10percent').click(function() {handleCalculate("10%");});
+ 	$('#calculate').click(function() {handleCalculate(-1);});
+ 	$('#batchRun').click(function() {handleCalculate(-1000);});
  	      
 	function plotBarGraph(WordErrorScores){
 	try{
@@ -460,9 +538,9 @@
 	        // option on the series option.  Here a series option object
 	        // is specified for each series.
 	        series:[
-	            {label:'Word Errors'},
-	            {label:'Part Word Errors'},
-	            {label:'Non Word Errors'}
+	            {label:'Word'},
+	            {label:'Part Word'},
+	            {label:'Non Word'}
 	        ],
 	        // Show the legend and put it inside the grid
 	        legend: {
@@ -536,100 +614,63 @@
     	$('chartOutput1').empty();  
     	$('chartOutput2').empty();  
 	    ret = TRACX.testString(bigram);
+	    var len = ret.activations.In.elements[0].length /2;
+	    var input1 = [ret.activations.In.elements[0].slice(0,len)];
+	    var input2 = [ret.activations.In.elements[0].slice(len)];
+	    var hidden = [ret.activations.Hid.elements[0].slice(0,len)];
+	    var output1 = [ret.activations.Out.elements[0].slice(0,len)];
+	    var output2 = [ret.activations.Out.elements[0].slice(len)];
+	    var letter1; 
+	    if (ret.activations.Input1Hidden){
+	    	letter1 = "Hidden";
+	    }else{
+	    	letter1 = bigram[bigram.length -2];
+	    }    	
+	    var letter2 = bigram[bigram.length -1];
 	    
-	    var plotInput1 = $.jqplot('chartInput1', ret.activations.In.elements, 
-	    	{	title: 'Input 1',
+	    var plotInput1 = $.jqplot('chartInput1', input1, 
+	    	{	title: 'Input 1: ' + letter1,
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
-	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
-	                label: 'Item Types',
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
-	            yaxis: {
-					min:-1.05,
-	                max:1.05,
-	                pad: 1.05,
-	   				label: "Activation",
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-   		            }
+	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
+	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
-	    var plotInput2 = $.jqplot('chartInput2', ret.activations.In.elements, 
-	    	{	title: 'Input 2',
+	    var plotInput2 = $.jqplot('chartInput2', input2, 
+	    	{	title: 'Input 2: ' + letter2,
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
-	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
-	                label: 'Item Types',
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
-	            yaxis: {
-					min:-1.05,
-	                max:1.05,
-	                pad: 1.05,
-	   				label: "Activation",
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-   		            }
+	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
+	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
-	    var plotHidden = $.jqplot('chartHidden', ret.activations.Hid.elements, 
+	    var plotHidden = $.jqplot('chartHidden', hidden, 
 	    	{	title: 'Hidden',
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
-	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
-	                label: 'Item Types',
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
-	            yaxis: {
-					min:-1.05,
-	                max:1.05,
-	                pad: 1.05,
-	   				label: "Activation",
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-   		            }
+	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
+	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
-	   	var plotOutput1 = $.jqplot('chartOutput1', ret.activations.Out.elements, 
+	   	var plotOutput1 = $.jqplot('chartOutput1', output1, 
 	    	{	title: 'Output 1',
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
-	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
-	                label: 'Item Types',
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
-	            yaxis: {
-					min:-1.05,
-	                max:1.05,
-	                pad: 1.05,
-	   				label: "Activation",
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-   		            }
+	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
+	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
-	   var plotOutput2 = $.jqplot('chartOutput2', ret.activations.Out.elements, 
+	   var plotOutput2 = $.jqplot('chartOutput2', output2, 
 	    	{	title: 'Output 2',
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
-	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
-	                label: 'Item Types',
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
-	            yaxis: {
-					min:-1.05,
-	                max:1.05,
-	                pad: 1.05,
-	   				label: "Activation",
-					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-   		            }
+	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
+	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
 	    	
