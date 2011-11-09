@@ -11,8 +11,8 @@
  */
 var TRACX = (function () { 
     var API = {}; //a variable to hold public interface for this module
-    API.Version = '0.1.1'; //version number for 
-    API.VersionDate = "31-September-2011";
+    API.Version = '0.1.5'; //version number for 
+    API.VersionDate = "05-November-2011";
     
     //private variables
     var trainingData,userEncodings, inputEncodings,
@@ -32,14 +32,18 @@ var TRACX = (function () {
 		fahlmanOffset: 0.1,
 		bias: -1,
 		sentenceRepetitions: 1,
-		numberSubjects: 1
+		numberSubjects: 1,
+		inputEncoding:'local'
 	};
     
     //variables for stting through
-	var currentStep, maxSteps,inputLength,startSimulation, net, testResults;
+	var letters, currentStep, maxSteps,inputLength,startSimulation, net, testResults;
      
     API.setParameters = function (parameters) { 
         params = parameters;
+        //force fahlmanOffset & bias to be default values
+        params.bias = -1;
+        params.fahlmanOffset = 0.1;
     }; 
     API.getParameters = function () { 
         return params;
@@ -102,6 +106,29 @@ var TRACX = (function () {
     function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
 	}
+	
+	//convert decimal number into a binary array representation
+	//works for numbers <=255
+	function dec2bin(num1){
+		var binString = "";
+		var binArray = [];
+		var bipolarArray = [];
+		var currnum = 128;
+		for (p = 1; p <= 8; p++){
+			if(num1 >= currnum){
+				binString = binString + "1";
+				binArray.push(1);
+				bipolarArray.push(1);
+				num1 = num1 - currnum;
+			}else{
+				binString = binString + "0";
+				binArray.push(0);
+				bipolarArray.push(-1);
+			}
+			currnum = currnum / 2;
+		}
+		return {binArray:binArray,bipolarArray:bipolarArray,string:binString};
+	}
 
    	//find the unique elements of array - useful for getting all possible phonemes/syllables
 	function unique(array) {
@@ -129,21 +156,33 @@ var TRACX = (function () {
 
 	
 	API.getInputEncodings = function(){
-		if (userEncodings){
+		if (params.inputEncoding === 'user'){
 			return inputEncodings;
 		}else if (!trainingData){
 			return null;
 		}
 		//generate the input vectors
 		inputEncodings = [];
-		var letters = unique(trainingData); //find unique letters
-		var zeroArray = newFilledArray(letters.length,-1);
-		for(var i=0, l=letters.length;i<l;i++){
-			//each input encoded as zeros everywhere
-			var thisInput = zeroArray.slice(0); //make a new copy of array
-			//except for i-th dimension
-			thisInput[i]=1;
-			inputEncodings[letters[i]]=thisInput;
+		letters = unique(trainingData); //find unique letters
+		if (params.inputEncoding === 'local'){
+			//local encoding - one column per letter. 
+			//one column +1, all others -1
+			var bipolarArray = newFilledArray(letters.length,-1);
+			for(var i=0, l=letters.length;i<l;i++){
+				//each input encoded as zeros everywhere
+				var thisInput = bipolarArray.slice(0); //make a new copy of array
+				//except for i-th dimension
+				thisInput[i]=1;
+				inputEncodings[letters[i]]=thisInput;
+			}
+		}else{
+			//binary encoding - each letter numbered and
+			//represented by corresponding 8bit binary array of -1 and 1.
+			for(var i=0, l=letters.length;i<l;i++){
+				//each input encoded as zeros everywhere
+				var ret = dec2bin(i+1);
+				inputEncodings[letters[i]] = ret.bipolarArray.slice(0); //make a new copy of array
+			}
 		}
 		console.log(inputEncodings);
 		return inputEncodings;			
@@ -156,7 +195,7 @@ var TRACX = (function () {
 		if (!inputEncodings){
 			return null;
 		}
-		var N = Object.size(inputEncodings); // Get the size of input vector
+		var N = Object.size(inputEncodings[letters[1]]); // Get the size of input vector
 		//console.log(N);
 		if (N<2){
 			return null;
@@ -189,8 +228,7 @@ var TRACX = (function () {
 		var stddev =0.0;
 		var meanx = mean(x);
 		if (n != 1)	{
-			for (var i = 0; i <= n - 1; i++)
-			{
+			for (var i = 0; i <= n - 1; i++){
 				v1 = v1 + (x[i] - meanx) * (x[i] - meanx);
 				v2 = v2 + (x[i] - meanx);
 			}
@@ -386,7 +424,7 @@ var TRACX = (function () {
 		for(w in testItem){
 			if (testItem[w].length>1){
 		    	ret = TRACX.testString(testItem[w]);
-		    	toterr += ret.totalDelta;
+		    	toterr += ret.meanDelta;
 		    	wordcount++; 
 		    	deltas.push(ret.totalDelta.toFixed(3));
 			}
@@ -444,7 +482,6 @@ var TRACX = (function () {
   	 * The function which gets called when someone presses the calculate button.
   	 */
   	API.runFullSimulation = function(progressCallback){
-  		
   		startSimulation = new Date();
   		currentStep = 0;
   		inputLength = trainingData.length -1;
@@ -473,7 +510,7 @@ var TRACX = (function () {
 		progressCallback(1, 'Subjects: ');
 		//loop round with a new network each time
 	 	for (var run_no=0; run_no<params.numberSubjects;run_no++){
-		    if (run_no < params.numberSubjects){
+		    if (run_no < params.numberSubjects-1){
 		    	//in batchmode we only track results of last participant
 		    	batchMode = true;
 		    }

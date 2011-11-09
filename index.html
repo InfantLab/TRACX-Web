@@ -58,8 +58,8 @@
 	        	<option selected="selected">12. Kirkham,Slemmer &amp; Johnson, 2002 </option>        	
 	        </select>        
 	        <label for="dataselection">Or select file</label>
-	     	<input type="file" id="userDataFiles" multiple /><br/>
-			<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br/>
+	     	<input type="file" id="userDataFiles" multiple /><br>
+			<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br>
 			<em>Each training sentence should begin on a new line.</em>
 		</fieldset>
 	</td><td>
@@ -73,19 +73,20 @@
 	            <td>Recognition Criterion</td>
 	            <td><input type="text" id="recognitionCriterion" class="required"  value="0.4"/></td></tr>
 	        <tr>
-	            <td>Reinforcement Threshold</td>
-	            <td><input type="text" id="reinforcementThreshold" class="required" value="0.25"/></td></tr>
+	            <td>Reinforcement Probability</td>
+	            <td><input type="text" id="reinforcementProbability" class="required" value="0.25"/></td></tr>
 	        <tr>
 	            <td>Momentum </td><td><input type="text" id="momentum" class="required" value="0.0"/></td></tr>
 	        <tr>
 	            <td>Sentence repetitions</td><td><input type="text" id="sentenceRepetitions" class="required" value="1"/></td></tr>
 	        <tr>
-	            <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td></tr>
+	            <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td>
+	        </tr>
 	        <tr>
-	            <td>Fahlman Offset</td><td><input type="text" id="fahlmanOffset" class="required" value="0.1"/></td></tr>
-	        <tr>
-	            <td>Bias value</td>
-	            <td><input type="text" id="bias" class="required" title="Bias" value="-1"/></td>
+	            <td>Input encoding</td>
+	            <td><input type="radio" name="inputEncoding" id="localEncoding" value="local" checked>Local<br>
+	                <input type="radio" name="inputEncoding" id="distributedEncoding" value="binary">Distributed (binary)<br>
+	            </td>
 	        </tr>
 	    </table>
 	</fieldset>
@@ -116,8 +117,6 @@
 	    </table>
 
 
-    	<input type="checkbox" id="graphResults" checked="checked"/> Graph outputs   
-		<input type="checkbox" id="graphActivations" checked="checked"/> Graph activations<br/>
 		<div id="mySummary"></div>
 		<div class="collapsibleContainer" title="Tracx internal parameters (click to show/hide)">
 			<div id="extraInfo">The internal parameters used by the network will appear here. </div>
@@ -173,7 +172,7 @@
 		<td><input id="trackingInterval"  value="25"></input></td>
 		<td><input type="checkbox" id="trackingFlag" checked="unchecked"/></td>
 			
-</tr></table><br/>
+</tr></table><br>
 <em>Test items should be seperated by commas.</em>
 
 
@@ -188,10 +187,9 @@
 	$(document).ready(function() 
 	{
 		//allow show/hide the extra information coming back from tracx.js 
+		//note we use a slightly modified version of this plugin that defaults to collapsed 
 		$(".collapsibleContainer").collapsiblePanel();
-		// $(".collapsibleContainerContent", $(this).parent()).slideToggle();
-       	// $(".collapsibleContainerContent", $(this).parent()).slideToggle();
-
+		
 		/******************************************************
 		 * SOME HELP AND DESCRIPTION OF INPUTS AND PARAMETERS *
 		 * APPEARS AS 'TOOLTIPS' WHEN USER HOVERS MOUSE OVER  *
@@ -202,7 +200,7 @@
 	    	style: 'cream'
 		});
 	   	$('#trainingData').qtip({
-	    	content: 'Training Data<br/>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are seperated by carriage returns.',
+	    	content: 'Training Data<br>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are seperated by carriage returns.',
 	    	style: 'cream'
 		});
 	   	$('#testWords').qtip({
@@ -218,39 +216,39 @@
 	    	style: 'cream'
 		});
 	   	$('#learningRate').qtip({
-	    	content: 'By how much do we adjust the weight matrices on each cycle of backpropogation.<br/><em>Defaults:<br/>Artificial grammar: 0.04<br/>Real world corpus: 0.004</em>',
+	    	content: 'By how much do we adjust the weight matrices on each cycle of backpropogation.<br><em>Defaults:<br>Artificial grammar: 0.04<br>Real world corpus: 0.004</em>',
 	    	style: 'cream'
 		});
 		$('#recognitionCriterion').qtip({
-	    	content: 'Maximum output error must be below this value for all nodes before network is deemed to recognise an input pair. When an input pair is recognised the hidden unit activations are passed back as an input for the next step.<br/><em>Default: 0.3</em>',
+	    	content: 'Maximum output error must be below this value for all nodes before network is deemed to recognise an input pair. When an input pair is recognised the hidden unit activations are passed back as an input for the next step.<br><em>Default: 0.3</em>',
 	    	style: 'cream'
 		});
-		$('#reinforcementThreshold').qtip({
-	    	content: 'Learning is weaker for hidden representations. Therefore we only backpropogate errors this proportion of the time (determined probablistically by <em>Math.random() < ReinforcementThreshold</em>) .<br/><em>Default: 0.25</em>',
+		$('#reinforcementProbability').qtip({
+	    	content: 'Learning is weaker for hidden representations. Therefore we only backpropogate errors this proportion of the time (determined probablistically by <em>Math.random() < reinforcementProbability</em>) .<br><em>Default: 0.25</em>',
 	    	style: 'cream'
 		});
 		$('#momentum').qtip({
-	    	content: 'Standard backpropogation momentum parameter.<br/><em>Default: 0.0</em>',
+	    	content: 'Standard backpropogation momentum parameter.<br><em>Default: 0.0</em>',
 	    	style: 'cream'
 		});
 		$('#sentenceRepetitions').qtip({
-	    	content: 'How often do we repeat each sentence/utterance in the learning corpus.<br/><em>Default: 6</em>',
+	    	content: 'How often do we repeat each sentence/utterance in the learning corpus.<br><em>Default: 6</em>',
+	    	style: 'cream'
+		});
+		$('#localEncoding').qtip({
+	    	content: 'Each letter encoding as a bipolar local array. +1 in one location and  -1 in all others.',
+	    	style: 'cream'
+		});
+    	$('#distributedEncoding').qtip({
+	    	content: 'Each letter numbered and represented by corresponding 8bit binary array of 1s and -1s. e.g. if there were 12 different letters, the 12th letter would be <br>-1,-1,-1,-1, 1, 1, -1, -1 ',
 	    	style: 'cream'
 		});
 		$('#numberSubjects').qtip({
-	    	content: 'How many times do we run the full simulation and test?<br/><em>Default: 1</em>',
+	    	content: 'How many times do we run the full simulation and test?<br><em>Default: 1</em>',
 	    	style: 'cream'
 		});
 		$('#temperature').qtip({
-	    	content: 'What is the slope of the hyperbolic tanget activation function?<br/><em>Default: 1</em>',
-	    	style: 'cream'
-		});
-		$('#fahlmanOffset').qtip({
-	    	content: 'The Fahlman offset speeds up learning. It is discussed in<br/><font size="small">Fahlman, S. E. (1988). Faster-learning variations on back-propagation: An empirical study. In D. S. Touretzky, G. E. Hinton, & T. J. Sejnowski (Eds.), Proceedings of the 1988 Connectionist Models Summer School (pp. 38-51). Los Altos, CA: Morgan Kaufmann</font><br/><em>Default: 0.04</em>',
-	    	style: 'cream'
-		});
-		$('#bias').qtip({
-	    	content: 'Bias node activation - An node with this activation is always added to the set of inputs and to the set of hidden units.<br/><em>Default: -1</em>',
+	    	content: 'What is the slope of the hyperbolic tanget activation function?<br><em>Default: 1</em>',
 	    	style: 'cream'
 		});
 		$('#reset').qtip({
@@ -355,10 +353,10 @@
  			$('#mySummary').html("Tracx Simulator not found, try reloading the page or contact us");
  			return;
  		}else{
- 			$('#mySummary').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br/>");
+ 			$('#mySummary').html("Tracx Simulator Version <strong>" + TRACX.Version + "</strong>, " + TRACX.VersionDate + "<br>");
  		}
  		if ($("#trainingData").val().length < 2){
- 			$('#mySummary').append("Please provide some training data.<br/>");
+ 			$('#mySummary').append("Please provide some training data.<br>");
  			return;
  		}
  		//clear the old graphs
@@ -371,7 +369,7 @@
 		$('#chartOutput2').empty();  
 
 
-		$('#mySummary').append("Loading training data...<br/>");
+		$('#mySummary').append("Loading training data...<br>");
 		TRACX.setTrainingData($("#trainingData").val());
 		//fill in the params from input form
 		var networkParams = {};
@@ -380,18 +378,20 @@
 		});
 		//and the number of subjects for batch mode
 		networkParams.numberSubjects = parseFloat($('#numberSubjects').val());
+		//which encoding scheme do we use?
+		networkParams.inputEncoding  = $("input[@name=inputEncoding]:checked").val();
 		TRACX.setParameters(networkParams);
-		$('#extraInfo').html("<em>Network Parameters</em><br/>");
-		$('#extraInfo').append(JSON.stringify(networkParams) + "<br/>");
+		$('#extraInfo').html("<em>Network Parameters</em><br>");
+		$('#extraInfo').append(JSON.stringify(networkParams) + "<br>");
 		
 		//encode all the input tokens
 		var encodings = TRACX.getInputEncodings();
-		$('#extraInfo').append("<em>Token / phoneme encodings</em><br/>");
+		$('#extraInfo').append("<em>Token / phoneme encodings</em><br>");
 		for(enc in encodings){
-			$('#extraInfo').append("<strong>" + enc + ":</strong> "+ encodings[enc] + "<br/>");
+			$('#extraInfo').append("<strong>" + enc + ":</strong> "+ encodings[enc] + "<br>");
 		}
 		
-	    $('#extraInfo').append("<em>Training:</em><br/>");
+	    $('#extraInfo').append("<em>Training:</em><br>");
         var loggingLevel = 1;
         
         //do we track learning as we go along?
@@ -467,43 +467,37 @@
 		$('#chartOutput2').empty();  
 
 		var graphVals = [];
-    	$('#myResults').append("<br/><em>Testing:</em><br/>");
-        $('#myResults').append("Words :" + $("#testWords").val() + "<br/>");
+    	$('#myResults').append("<br><em>Testing:</em><br>");
+        $('#myResults').append("Words :" + $("#testWords").val() + "<br>");
 		if (ret.Words.mean){			
-	    	$('#myResults').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br/>");
-	        graphVals.push([ret.Words.mean]);
+	    	$('#myResults').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br>");
+	        graphVals.push(ret.Words.mean);
        	}else{
-       		$('#myResults').append("-<br/>");
-	        graphVals.push([0]);      	
+       		$('#myResults').append("-<br>");
+	        graphVals.push(0);      	
        	}
-        $('#myResults').append("Part Words :" + $("#testPartWords").val() + "<br/>");
+        $('#myResults').append("Part Words :" + $("#testPartWords").val() + "<br>");
     	if (ret.PartWords.mean){			
-	    	$('#myResults').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br/>");
-	        graphVals.push([ret.PartWords.mean]);
+	    	$('#myResults').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br>");
+	        graphVals.push(ret.PartWords.mean);
        	}else{
-       		$('#myResults').append("-<br/>");
-	        graphVals.push([0]);      	
+       		$('#myResults').append("-<br>");
+	        graphVals.push(0);      	
        	}
-        $('#myResults').append("Non Words :" + $("#testNonWords").val() + "<br/>");
+        $('#myResults').append("Non Words :" + $("#testNonWords").val() + "<br>");
     	if (ret.NonWords.mean){			
-	    	$('#myResults').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br/>");
-	        graphVals.push([ret.NonWords.mean]);
+	    	$('#myResults').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br>");
+	        graphVals.push(ret.NonWords.mean);
        	}else{
-       		$('#myResults').append("-<br/>");
-	        graphVals.push([0]);      	
+       		$('#myResults').append("-<br>");
+	        graphVals.push(0);      	
        	}
-		console.log($("#graphResults").is(':checked'));
-       	if ($("#graphResults").is(':checked')){
-	      	plotBarGraph(graphVals);
-	      	if($("#trackingFlag").val()){
-	      		plotLearning(ret.trackingSteps, ret.trackingOutputs);
-	      	}
-       	}
-       	
+	
+		//PLOT ALL THE GRAPHS
+	  	plotBarGraph(graphVals);
+  		plotLearning(ret.trackingSteps, ret.trackingOutputs);
        	var currentString = TRACX.getLastTrainingItems(4);
        	plotActivations(currentString);
-       	//allow show/hide the extra information coming back from tracx.js 
-		//$(".collapsibleContainer").collapsiblePanel();
        	
     // }
     // catch(err){
@@ -523,9 +517,9 @@
 	try{
 	    // Can specify a custom tick Array.
 	    // Ticks should match up one for each y value (category) in the series.
-	    var ticks = ['Test Items'];
+	    var ticks = ['Words', 'Part Words', 'Non Words'];
 	    $('chartOutputError').empty();  
-	    var plot1 = $.jqplot('chartOutputError', WordErrorScores, {
+	    var plot1 = $.jqplot('chartOutputError', [WordErrorScores], {
 	    	  // Give the plot a title.
 			  title: 'Mean error scores per test item type',
 	        // The "seriesDefaults" option is an options object that will
@@ -537,22 +531,22 @@
 	        // Custom labels for the series are specified with the "label"
 	        // option on the series option.  Here a series option object
 	        // is specified for each series.
-	        series:[
-	            {label:'Word'},
-	            {label:'Part Word'},
-	            {label:'Non Word'}
-	        ],
-	        // Show the legend and put it inside the grid
-	        legend: {
-	            show: true,
-	            placement: 'outsideGrid'
-	        },
+	        // series:[
+	            // {label:'Word'},
+	            // {label:'Part Word'},
+	            // {label:'Non Word'}
+	        // ],
+	        // // Show the legend and put it inside the grid
+	        // legend: {
+	            // show: true,
+	            // placement: 'outsideGrid'
+	        // },
 	        axes: {
 	            // Use a category axis on the x axis and use our custom ticks.
 	            xaxis: {
 	                renderer: $.jqplot.CategoryAxisRenderer,
 	                ticks: ticks,
-	                label: 'Item Types',
+	                // label: 'Item Types',
 					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 	            },
 	            // Pad the y axis just a little so bars can get close to, but
@@ -574,6 +568,10 @@
 	function plotLearning(trackingSteps, trackingOutputs){
 		var serieslabels = [];
 		var seriesdata = []
+		for (var i = 0; i < 10; i++){
+		
+		}
+		
 		for(x in trackingOutputs){
 			serieslabels.push({label:x});
 			seriesdata.push(trackingOutputs[x]);
@@ -593,7 +591,7 @@
 			  	xaxis: {
 			 		label: "Number  of training items",
   			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-			  		ticks: trackingSteps,
+			  		// ticks: trackingSteps, //leave this out to let it calculate automagically
 			  		pad: 0
 					},
 				yaxis: {
@@ -678,8 +676,8 @@
 	</script>
 
     <footer>
-    For a guide on how to step through the TRACX simulator code <a href="debugmode.html" target="_blank">click here</a>.<br/>
-    To report a bug, <a href="https://github.com/YourBrain/TRACX-Web/issues/new"target="_blank">click here</a><br/>
+    For a guide on how to step through the TRACX simulator code <a href="debugmode.html" target="_blank">click here</a>.<br>
+    To report a bug, <a href="https://github.com/YourBrain/TRACX-Web/issues/new"target="_blank">click here</a><br>
     Source Code: <a href="https://github.com/YourBrain/TRACX-Web" target="_blank">github.com/YourBrain/TRACX-Web</a>
      <p>&copy; <a href="mailto:C.Addyman@bbk.ac.uk">Caspar Addyman</a> &amp; Robert M. French, 2011</p>
     </footer>
