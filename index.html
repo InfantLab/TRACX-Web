@@ -7,7 +7,7 @@
        Remove this if you use the .htaccess -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-  <title>TRACX Online Simulator</title>
+  <title>TRACX simulator</title>
   <meta name="description" content="" />
   <meta name="author" content="Caspar Addyman" />
   <meta name="viewport" content="width=device-width; initial-scale=1.0" />
@@ -38,9 +38,13 @@
 <body>
   <div>
     <header>
-      <h1>TRACX simulator</h1> 
+      <h1>TRACX simulator</h1>
+	  <fieldset><legend><strong>Truncated Recursive Autoassociative Chunk eXtractor</strong></legend>
+      <p>TRACX is a new model of sequence learning. It is a connectionist autoassociator model which fits a wide range of phenomena from the infant statistical learning and adult implicit learning literature. TRACX outperforms PARSER (Perruchet & Vintner, 1998) and the simple recurrent network (SRN, Cleeremans & McClelland, 1991) in matching human sequence segmentation on existing data. This simulator is written entirely in Javascript and runs locally in your browser. More details of the model can be found in:</p>
+      <p style="font-size:70%">French, R. M., Addyman, C., &amp; Mareschal, D. (2011). TRACX: A recognition-based connectionist framework for sequence segmentation and chunk extraction <em>Psychological Review</em>, 118(4), 614–636. <a href="http://doi.apa.org/getdoi.cfm?doi=10.1037/a0025255">doi:10.1037/a0025255</a> [<a href="French_Psychological_Review_2011-2.pdf" target="_blank">pdf</a> - 872k]</p> 
+		</fieldset>
     </header>
-    <form id="LearnParams">
+    <form id="LearnParams" name='learnparams'>
     	<table><tr><td>
 	    	<fieldset><legend>Step 1 - Choose Training data:</legend>
 	    	<label for="stored">Existing dataset</label>
@@ -84,8 +88,14 @@
 	        </tr>
 	        <tr>
 	            <td>Input encoding</td>
-	            <td><input type="radio" name="inputEncoding" id="localEncoding" value="local" checked>Local<br>
-	                <input type="radio" name="inputEncoding" id="distributedEncoding" value="binary">Distributed (binary)<br>
+	            <td><input type="radio" name="inputEncoding"  value="local" checked>Local<br>
+	                <input type="radio" name="inputEncoding"  value="binary">Distributed (binary)<br>
+	            </td>
+	        </tr>
+	        <tr>
+	            <td>Delta rule</td>
+	            <td><input type="radio" name="deltaRule" value="max" checked>Absolute maximum error<br>
+	                <input type="radio" name="deltaRule" value="rms">Root mean square error<br>
 	            </td>
 	        </tr>
 	    </table>
@@ -360,7 +370,7 @@
  			return;
  		}
  		//clear the old graphs
- 			$('#chartOutputError').empty();  
+ 		$('#chartOutputError').empty();  
 		$('#chartTrackLearning').empty();  
 		$('#chartInput1').empty();  
 		$('#chartInput2').empty();  
@@ -379,7 +389,9 @@
 		//and the number of subjects for batch mode
 		networkParams.numberSubjects = parseFloat($('#numberSubjects').val());
 		//which encoding scheme do we use?
-		networkParams.inputEncoding  = $("input[@name=inputEncoding]:checked").val();
+		networkParams.inputEncoding  = $("input[name='inputEncoding']:checked").val();
+		//which delta rule?
+		networkParams.deltaRule  = $("input[name='deltaRule']:checked").val();
 		TRACX.setParameters(networkParams);
 		$('#extraInfo').html("<em>Network Parameters</em><br>");
 		$('#extraInfo').append(JSON.stringify(networkParams) + "<br>");

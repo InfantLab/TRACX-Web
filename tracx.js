@@ -33,12 +33,18 @@ var TRACX = (function () {
 		bias: -1,
 		sentenceRepetitions: 1,
 		numberSubjects: 1,
-		inputEncoding:'local'
+		inputEncoding:'local',  // local,binary,user
+		deltaRule:'max',		//max,rms
+		testErrorType:'final'  //final,average,conditional
 	};
     
     //variables for stting through
 	var letters, currentStep, maxSteps,inputLength,startSimulation, net, testResults;
      
+	/**********************************************
+	 **** Getting and setting variables			*** 
+	 **********************************************/
+ 
     API.setParameters = function (parameters) { 
         params = parameters;
         //force fahlmanOffset & bias to be default values
@@ -102,6 +108,10 @@ var TRACX = (function () {
 		}
 		return trainingString;
 	}
+
+	/**********************************************
+	 **** Some helper functions					*** 
+	 **********************************************/
    
     function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
@@ -153,8 +163,76 @@ var TRACX = (function () {
 	    }
 	    return size;
 	};
-
 	
+	/**********************************************
+	 **** Some maths functions					***
+	 **** Many of these are taken directly from ***
+	 **** http://rosettacode.org 				***
+	 **********************************************/
+
+	//sum up the elements of array
+	function sum (x) {
+		for(var i=0,sum=0;i<x.length;sum+=x[i++]);
+		return sum;
+	}
+
+	//a fairly standard network error function
+	function rootmeansquare(ary) {
+	// Array.reduce not implemented in all browsers
+	//    var sum_of_squares = ary.reduce(function(s,x) {return (s + x*x)}, 0);
+	//so use simple loop version 
+	for(var i=0,sum_of_squares=0;i<ary.length;i++){sum_of_squares+=ary[i]*ary[i];};
+	return Math.sqrt(sum_of_squares / ary.length);
+	}
+
+	//mean value of elements in array
+	function mean (x) {
+	    return sum(x) / x.length;
+	}
+	//standard deviation function.
+	function stdev(x) {
+		var variance = 0.0;
+		var n = x.length;
+		var v1 = 0.0;
+		var v2 = 0.0;
+		var stddev =0.0;
+		var meanx = mean(x);
+		if (n != 1)	{
+			for (var i = 0; i <= n - 1; i++){
+				v1 = v1 + (x[i] - meanx) * (x[i] - meanx);
+				v2 = v2 + (x[i] - meanx);
+			}
+			v2 = v2*v2 / n;
+			variance = (v1 - v2) / (n-1);
+			if (variance < 0) { variance = 0; }
+			stddev = Math.sqrt(variance);
+		}
+		return stddev;
+	}
+	
+	function tanh (x) {
+    	//slow tanh fn
+    	// sinh(number)/cosh(number)
+	    return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
+	}
+	function rational_tanh(x){
+		//fast approx tanh fn
+		//http://stackoverflow.com/questions/6118028/fast-hyperbolic-tangent-approximation-in-javascript
+	    if(x<-3)
+	        return -1;
+	    else if(x>3)
+	        return 1;
+	    else
+	        return x*(27 + x*x)/(27 + 9*x*x);
+	}
+	function tanh_deriv(x){
+		//derivative of the -1 to 1 tanh squashing fcn
+		return  params.temperature * (1 - x*x) + params.fahlmanOffset;
+	}
+
+	/**********************************************
+	 **** Simulator logic						*** 
+	 **********************************************/
 	API.getInputEncodings = function(){
 		if (params.inputEncoding === 'user'){
 			return inputEncodings;
@@ -210,61 +288,8 @@ var TRACX = (function () {
         OLD_deltaWeightsHiddenToOutput = false;
 	};
 	
-	//sum up the elements of array
-	function sum (x) {
-		for(var i=0,sum=0;i<x.length;sum+=x[i++]);
-		return sum;
-	}
-	//mean value of elements in array
-	function mean (x) {
-	    return sum(x) / x.length;
-	}
-	//standard deviation function.
-	function stdev(x) {
-		var variance = 0.0;
-		var n = x.length;
-		var v1 = 0.0;
-		var v2 = 0.0;
-		var stddev =0.0;
-		var meanx = mean(x);
-		if (n != 1)	{
-			for (var i = 0; i <= n - 1; i++){
-				v1 = v1 + (x[i] - meanx) * (x[i] - meanx);
-				v2 = v2 + (x[i] - meanx);
-			}
-			v2 = v2*v2 / n;
-			variance = (v1 - v2) / (n-1);
-			if (variance < 0) { variance = 0; }
-			stddev = Math.sqrt(variance);
-		}
-		return stddev;
-	}
 	
-	function tanh (x) {
-    	//slow tanh fn
-    	// sinh(number)/cosh(number)
-	    return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
-	}
-	function rational_tanh(x){
-		//fast approx tanh fn
-		//http://stackoverflow.com/questions/6118028/fast-hyperbolic-tangent-approximation-in-javascript
-	    if(x<-3)
-	        return -1;
-	    else if(x>3)
-	        return 1;
-	    else
-	        return x*(27 + x*x)/(27 + 9*x*x);
-	}
-	function tanh_deriv(x){
-		//derivative of the -1 to 1 tanh squashing fcn
-		return  params.temperature * (1 - x*x) + params.fahlmanOffset;
-	}
 
-	API.ActivationFn = function(array){
-		for(x in array){
-			array[x] = rational_tanh(array[x]);	
-		}
-	};
 	/***
 	 * feed forward through the network
 	 */
@@ -287,9 +312,14 @@ var TRACX = (function () {
 		var Output_out_acts = Output_net_in_acts.map(tanh);
 		
 		//calculate the delta between input and output
+		//depending on which deltaRule we want to use
 		var del = Output_out_acts.subtract(InputVector);
-		del = del.map(Math.abs);
-		return {In:InputVector,Hid: Hid_out_acts, Out: Output_out_acts, Delta:del.max()};
+		if (params.deltaRule === 'max'){
+			del = del.map(Math.abs).max();
+		}else if (params.deltaRule === 'rms'){
+			del = rootmeansquare(del.elements[0]);
+		}
+		return {In:InputVector,Hid: Hid_out_acts, Out: Output_out_acts, Delta:del};
 	};
   	
   	function backPropogateError(net){
@@ -397,7 +427,7 @@ var TRACX = (function () {
 					//at fixed intervals with a set of test bigrams
 					for(x in trackingBigrams){
 						var ret = API.testString(trackingBigrams[x]);
-						trackingResults[trackingBigrams[x]].push([currentStep, ret.meanDelta]);
+						trackingResults[trackingBigrams[x]].push([currentStep, ret.testError]);
 					}
 				}
 				currentStep++;			
@@ -424,15 +454,15 @@ var TRACX = (function () {
 		for(w in testItem){
 			if (testItem[w].length>1){
 		    	ret = TRACX.testString(testItem[w]);
-		    	toterr += ret.meanDelta;
+		    	toterr += ret.testError;
 		    	wordcount++; 
 		    	deltas.push(ret.totalDelta.toFixed(3));
 			}
 		}
 		if (wordcount > 0){
-			return {delta:deltas,meanDelta:toterr/wordcount};
+			return {delta:deltas,testError:toterr/wordcount};
 		}else{
-			return {delta:null,meanDelta:null};
+			return {delta:null,testError:null};
 		}
 		
 	};
@@ -448,8 +478,21 @@ var TRACX = (function () {
 	  		var delta = [];
 	  		var totDelta = 0;
 	  		var input1Hidden = false;
+	  		var CRITERION;
+	  		if (params.testErrorType === "final"){
+	  			//used in the paper
+	  			//always pass through hidden network activation
+	  			CRITERION = 1000;
+	  		}else if (params.testErrorType === "conditional"){
+	  			//only use hidden activation if we have meet criterion
+	  			CRITERION = params.recognitionCriterion;
+	  		}else{
+	  			//never pass the hidden activation
+	  			CRITERION = -1;
+	  		}
+	  			 
 	  		for(var i=0; i<len-1;i++){
-	  			if (net.Delta < params.recognitionCriterion){
+	  			if (i>0 && net.Delta < CRITERION){
 					//new input is hidden unit representation
 					Input_t1 = net.Hid.elements[0];
 					//not including bias
@@ -466,9 +509,12 @@ var TRACX = (function () {
 				delta.push(net.Delta);
 				totDelta += net.Delta;
 			}
+			var meanDelta = totDelta/(len-1);
 	  		return {deltas:			delta,
 	  				totalDelta:		totDelta, 
-	  				meanDelta:	totDelta/(len-1),
+	  				meanDelta:	meanDelta,
+	  				finalDelta: net.Delta,
+	  				testError: (params.testErrorType === "final"? net.Delta : meanDelta),
 	  				activations:net};
 	  	}
 	    /*******************/
@@ -533,16 +579,16 @@ var TRACX = (function () {
 				/////////////////////////////////// ////
 				//TESTING THE NETWORK
 				var	ret = TRACX.testStrings(testWords );
-				if (ret.meanDelta){			
-			    	testResults.Words.all.push(ret.meanDelta);
+				if (ret.testError){			
+			    	testResults.Words.all.push(ret.testError);
 			   	}
 				ret =  TRACX.testStrings(testPartWords );
-		    	if (ret.meanDelta){			
-			    	testResults.PartWords.all.push(ret.meanDelta);			        
+		    	if (ret.testError){			
+			    	testResults.PartWords.all.push(ret.testError);			        
 		       	}
 				ret =  TRACX.testStrings(testNonWords );
-		    	if (ret.meanDelta){			
-			    	testResults.NonWords.all.push(ret.meanDelta);			        
+		    	if (ret.testError){			
+			    	testResults.NonWords.all.push(ret.testError);			        
 		       	}		    	
 	       	}		
 	    }
@@ -629,16 +675,16 @@ var TRACX = (function () {
 			/////////////////////////////////// ////
 			//TESTING THE NETWORK
 			var	ret = TRACX.testStrings(testWords );
-			if (ret.meanDelta){			
-		    	testResults.Words.all.push(ret.meanDelta);
+			if (ret.testError){			
+		    	testResults.Words.all.push(ret.testError);
 		   	}
 			ret =  TRACX.testStrings(testPartWords );
-	    	if (ret.meanDelta){			
-		    	testResults.PartWords.all.push(ret.meanDelta);			        
+	    	if (ret.testError){			
+		    	testResults.PartWords.all.push(ret.testError);			        
 	       	}
 			ret =  TRACX.testStrings(testNonWords );
-	    	if (ret.meanDelta){			
-		    	testResults.NonWords.all.push(ret.meanDelta);			        
+	    	if (ret.testError){			
+		    	testResults.NonWords.all.push(ret.testError);			        
 	       	}		    	
        	}		
 	    // }
