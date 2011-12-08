@@ -29,20 +29,20 @@ http://craigsworks.com/projects/qtip/
 1. Simulator Only
 ==================
 If you just wish to use the simulator, you can try it online at:
-http://yourbrainondrugs.net/tracx/
+http://leadserv.u-bourgogne.fr/~tracx/
 
 
 2. Local debugging
 ==================
 
 If you just wish to use the simulator _and_ step through the code. You can use the current live code from:
-http://yourbrainondrugs.net/tracx/
+http://leadserv.u-bourgogne.fr/~tracx/
 
 Together with an in browser debug engine. We recommend Firebug:
 https://getfirebug.com/
 
 We have a beginners guide to debugging available at:
-http://yourbrainondrugs.net/tracx/debughelp.html
+http://leadserv.u-bourgogne.fr/~tracx/debughelp.html
 
 
 3. Adapting and modifying the TRACX code yourself
