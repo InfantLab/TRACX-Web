@@ -159,7 +159,16 @@
 							<td><div id="chartOutput2" style="height:150px;width:240px "></div></td>
 						</tr>
 						<tr>
-							<td align="center" colspan="2"><div id="chartHidden" style="height:150px;width:240px "></div></td>
+							<td align="center" colspan="2">
+								<table>
+									<tr>
+										<td>
+											<div id="chartHidden" style="height:150px;width:240px "></div>
+										</td>								
+										<td>
+											<div id="Delta"></div>		
+										</td>
+								</table>
 						</tr>
 						<tr>
 							<td><div id="chartInput1" style="height:150px;width:240px "></div></td>
@@ -315,15 +324,25 @@
 	    	style: 'cream'
 		});
 	});
+
+	//add a click events to the calculation buttons
+ 	$('#reset').click(initialiseNetwork);
+ 	$('#stepPlus1').click(function() {handleCalculate(1);});
+ 	$('#stepPlus1percent').click(function() {handleCalculate("1%");});
+ 	$('#stepPlus10').click(function() {handleCalculate(10);});
+ 	$('#stepPlus10percent').click(function() {handleCalculate("10%");});
+ 	$('#calculate').click(function() {handleCalculate(-1);});
+ 	$('#batchRun').click(function() {handleCalculate(-1000);});
+	
+	
+	//fetches learning data for prespecified simulations from the server
 	function sendValue(str){
 		$.post("ajax.php", { sendToValue: str },
 			function(data){
-				console.log('ajax get simulationSelect return');
-			    //fill the track learning items
+				//fill the track learning items
 			    $("#trackingFlag").val(data.tracklearning.trackingFlag);
 			    $("#trackingBigrams").val(data.tracklearning.trackingBigram.join(","));
-			    $("#trackingInterval").val(data.tracklearning.trackingInterval);
-			    
+			    $("#trackingInterval").val(data.tracklearning.trackingInterval);			    
 			    //fill in the trainingData
 			    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
 			    //fill in the test items
@@ -334,11 +353,9 @@
 			    for(p in data.params){
 			    	$("#"+p).val(data.params[p]);
 			    }
-
  			}, 
 			"json");
 	}
-	
 	//add an event to fetch simulation data from the website
  	$('#simulationSelect').change(function(){
 		//get simulation data by id number
@@ -349,8 +366,6 @@
 		sendValue(simulationName[simulationNumber]);	
 		initialiseNetwork();
 	});
-	
-
 
 	//function to load the data from a file on the computer
 	function handleFileSelect(evt) {
@@ -359,25 +374,35 @@
 		$("textarea#trainingData").text("");
 		// Loop through the FileList and save load.
 		for (var i = 0, f; f = files[i]; i++) {
-	
 	      var reader = new FileReader();
-	      // Closure to capture the file information.
+	      //capture the file information.
 	      reader.onload = (function(theFile) {
-	        return function(e) {
-	        console.log(theFile.name);
-	        console.log('reader.onload e.target.result:' + e.target.result);
-	        $("output#list").append(theFile.name);       
-	        $("textarea#trainingData").append(e.target.result);
-	    };
-	      })(f);
-	
+		        return function(e) {
+		        $("output#list").append(theFile.name);       
+		        $("textarea#trainingData").append(e.target.result);
+		    };
+	      })(f);	
 	      // Read in the image file as a data URL.	
 	      reader.readAsText(f);
 	    }
 	}
 	//tell page what to do when use selects a data file.
 	document.getElementById('userDataFiles').addEventListener('change', handleFileSelect, false);
-        
+
+	//clear the old graphs
+	function clearGraphs(){
+ 		$('#chartOutputError').empty();  
+		$('#chartTrackLearning').empty();  
+		clearActivationGraphs();
+	}        
+	function clearActivationGraphs(){
+		$('#chartInput1').empty();  
+		$('#chartInput2').empty();  
+		$('#chartHidden').empty();  
+ 		$('#chartOutput1').empty();  
+		$('#chartOutput2').empty();  
+	}
+
    	function initialiseNetwork(){
    		if (TRACX === null){
  			$('#mySummary').html("Tracx Simulator not found, try reloading the page or contact us");
@@ -389,16 +414,8 @@
  			$('#mySummary').append("Please provide some training data.<br>");
  			return;
  		}
- 		//clear the old graphs
- 		$('#chartOutputError').empty();  
-		$('#chartTrackLearning').empty();  
-		$('#chartInput1').empty();  
-		$('#chartInput2').empty();  
-		$('#chartHidden').empty();  
- 		$('#chartOutput1').empty();  
-		$('#chartOutput2').empty();  
-
-
+ 		
+		clearGraphs();
 		$('#mySummary').append("Loading training data...<br>");
 		TRACX.setTrainingData($("#trainingData").val());
 		//fill in the params from input form
@@ -447,8 +464,7 @@
         
 	//function to run when calculate button is pressed
 	function handleCalculate(steps) {
-	console.log('handleCalculate');	
- 	// try{
+	// try{
  		if (TRACX === null){
  			$('#mySummary').html("Tracx Simulator not found, try reloading the page or contact us");
  			return;
@@ -492,14 +508,7 @@
  		}
 		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: " + TRACX.getCurrentStep() + "</em>");
 
- 		//clear the old graphs
- 		$('#chartOutputError').empty();  
-		$('#chartTrackLearning').empty();  
-		$('#chartInput1').empty();  
-		$('#chartInput2').empty();  
-		$('#chartHidden').empty();  
- 		$('#chartOutput1').empty();  
-		$('#chartOutput2').empty();  
+		clearGraphs();
 
 		var graphVals = [];
     	$('#myResults').append("<br><em>Testing:</em><br>");
@@ -539,14 +548,7 @@
 		// $('#myResult').append("Calculation error: " + err.message);
     // }    
     }
-	//add a click event to the calculate button
- 	$('#reset').click(initialiseNetwork);
- 	$('#stepPlus1').click(function() {handleCalculate(1);});
- 	$('#stepPlus1percent').click(function() {handleCalculate("1%");});
- 	$('#stepPlus10').click(function() {handleCalculate(10);});
- 	$('#stepPlus10percent').click(function() {handleCalculate("10%");});
- 	$('#calculate').click(function() {handleCalculate(-1);});
- 	$('#batchRun').click(function() {handleCalculate(-1000);});
+
  	      
 	function plotBarGraph(WordErrorScores){
 	try{
@@ -628,11 +630,8 @@
     	if (!TRACX){
     		return;
     	}
-    	$('chartInput1').empty();  
-    	$('chartInput2').empty();  
-    	$('chartHidden').empty();  
-    	$('chartOutput1').empty();  
-    	$('chartOutput2').empty();  
+		clearActivationGraphs();
+		TRACX.setSingleParameter('testErrorType','conditional');
 	    ret = TRACX.testString(bigram);
 	    var len = ret.activations.In.elements[0].length /2;
 	    var input1 = [ret.activations.In.elements[0].slice(0,len)];
@@ -640,6 +639,8 @@
 	    var hidden = [ret.activations.Hid.elements[0].slice(0,len)];
 	    var output1 = [ret.activations.Out.elements[0].slice(0,len)];
 	    var output2 = [ret.activations.Out.elements[0].slice(len)];
+	   
+	   	$('#Delta').html('<em style="font-size:2ex;">&Delta; = ' + ret.finalDelta.toFixed(3) + '<em>');
 	    var letter1; 
 	    if (ret.activations.Input1Hidden){
 	    	letter1 = "Hidden";
@@ -648,8 +649,17 @@
 	    }    	
 	    var letter2 = bigram[bigram.length -1];
 	    
-	    var plotInput1 = $.jqplot('chartInput1', input1, 
-	    	{	title: 'Input 1: ' + letter1,
+
+		//plot the activations
+	    plotSingleActivation('chartInput1','Input 1: ' + letter1,input1);
+	    plotSingleActivation('chartInput2','Input 2: ' + letter2,input2);
+	    plotSingleActivation('chartHidden','Hidden',hidden);
+	    plotSingleActivation('chartOutput1','Output 1',output1);
+	    plotSingleActivation('chartOutput2','Output 2',output2);
+    }
+    function plotSingleActivation(plotName,plotTitle,data){
+    	$.jqplot(plotName, data, 
+	    	{	title: plotTitle,
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
 	        	axes: {
@@ -657,43 +667,6 @@
 	            	yaxis: {min:-1,max:1}
 	        	}
 	    	});
-	    var plotInput2 = $.jqplot('chartInput2', input2, 
-	    	{	title: 'Input 2: ' + letter2,
-	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
-	        	legend: {show: false},
-	        	axes: {
-	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
-	            	yaxis: {min:-1,max:1}
-	        	}
-	    	});
-	    var plotHidden = $.jqplot('chartHidden', hidden, 
-	    	{	title: 'Hidden',
-	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
-	        	legend: {show: false},
-	        	axes: {
-	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
-	            	yaxis: {min:-1,max:1}
-	        	}
-	    	});
-	   	var plotOutput1 = $.jqplot('chartOutput1', output1, 
-	    	{	title: 'Output 1',
-	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
-	        	legend: {show: false},
-	        	axes: {
-	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
-	            	yaxis: {min:-1,max:1}
-	        	}
-	    	});
-	   var plotOutput2 = $.jqplot('chartOutput2', output2, 
-	    	{	title: 'Output 2',
-	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
-	        	legend: {show: false},
-	        	axes: {
-	            	xaxis: {renderer: $.jqplot.CategoryAxisRenderer},
-	            	yaxis: {min:-1,max:1}
-	        	}
-	    	});
-	    	
     }
     function gridWeights(gridCaption,gridName,WeightMatrix){
     	

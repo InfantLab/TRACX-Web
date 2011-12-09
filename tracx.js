@@ -51,9 +51,16 @@ var TRACX = (function () {
         //force fahlmanOffset & bias to be default values
         params.bias = -1;
         params.fahlmanOffset = 0.1;
+        params.testErrorType = 'final';  //final,average,conditional
     }; 
     API.getParameters = function () { 
         return params;
+    };
+    API.getSingleParameter = function(paramName){
+    	return params[paramName];
+    };
+    API.setSingleParameter = function(paramName, value){
+    	params[paramName] = value;
     };
     API.getWeightsIn2Hid = function () { 
         return weightsInputToHidden;
@@ -269,7 +276,6 @@ var TRACX = (function () {
 				inputEncodings[letters[i]] = ret.bipolarArray.slice(0); //make a new copy of array
 			}
 		}
-		console.log(inputEncodings);
 		return inputEncodings;			
 	};
 	
@@ -281,7 +287,6 @@ var TRACX = (function () {
 			return null;
 		}
 		var N = Object.size(inputEncodings[letters[1]]); // Get the size of input vector
-		//console.log(N);
 		if (N<2){
 			return null;
 		}
@@ -390,7 +395,6 @@ var TRACX = (function () {
     API.trainNetwork = function (steps, progressCallback) { 
 	    /*********************/
 	    try{
-	        console.log("trainNetwork");
 			//how many steps do we train for on this call
 			var untilStep;
 			if (steps < 0){
