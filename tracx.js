@@ -32,6 +32,7 @@ var TRACX = (function () {
 		fahlmanOffset: 0.1,
 		bias: -1,
 		sentenceRepetitions: 1,
+		randomSeed: '',     	//calculatd from string value - leave blank for random
 		numberSubjects: 1,
 		inputEncoding:'local',  // local,binary,user
 		deltaRule:'max',		//max,rms
@@ -96,6 +97,12 @@ var TRACX = (function () {
    	API.reset = function(){
    		currentStep  = -1;
    		testResults = null;
+   		if (params.randomSeed){
+	   		params.randomSeed =  Math.seedrandom(params.randomSeed);
+   		}else{
+   			params.randomSeed =  Math.seedrandom();
+   		}
+   		API.initializeWeights();
    	}
    	API.getInputEncoding = function(letter){
    		return inputEncodings[letter];	
@@ -528,7 +535,12 @@ var TRACX = (function () {
   	 * The function which gets called when someone presses the calculate button.
   	 */
   	API.runFullSimulation = function(progressCallback){
-  		startSimulation = new Date();
+   		if (params.randomSeed){
+   			params.randomSeed =  Math.seedrandom(params.randomSeed);
+   		}else{
+   			params.randomSeed =  Math.seedrandom();
+   		}
+   		startSimulation = new Date();
   		currentStep = 0;
   		inputLength = trainingData.length -1;
   		maxSteps = params.sentenceRepetitions * inputLength;
@@ -565,12 +577,11 @@ var TRACX = (function () {
 	  		API.initializeWeights();
 			if (progressCallback){
   				progressCallback(1,(1 + run_no) + ",");
-				progressCallback(0,"Run: " + (1 + run_no) + "<br/>");
-				progressCallback(0,'Initial Weight Matrices<br/>Input to Hidden<br/>');
-				progressCallback(0, weightsInputToHidden.inspect());
-				progressCallback(0,'<br/>Hidden to Output<br/>');
-				progressCallback(0,weightsHiddenToOutput.inspect());
-				
+				// progressCallback(0,"Run: " + (1 + run_no) + "<br/>");
+				// progressCallback(0,'Initial Weight Matrices<br/>Input to Hidden<br/>');
+				// progressCallback(0, weightsInputToHidden.inspect());
+				// progressCallback(0,'<br/>Hidden to Output<br/>');
+				// progressCallback(0,weightsHiddenToOutput.inspect());
 			}
 			
 			if(API.trainNetwork(-1, progressCallback)){
@@ -632,17 +643,16 @@ var TRACX = (function () {
 	  			progressCallback(1,"Simulation started: " + startSimulation.toLocaleTimeString() + "<br/>");
 	  		}
 	  		lastDelta = 500;  // some very big delta to start with
-	  		API.initializeWeights();
-			currentStep = 0;
+	  		currentStep = 0;
   			inputLength = trainingData.length -1;
   			maxSteps = params.sentenceRepetitions * inputLength;
   			if (progressCallback){
   				progressCallback(1, "Stepping through once,");
 				progressCallback(0,"Stepping through once <br/>");
-				progressCallback(0,'Weight Matrices<br/>Input to Hidden<br/>');
-				progressCallback(0, weightsInputToHidden.inspect());
-				progressCallback(0,'<br/>Hidden to Output<br/>');
-				progressCallback(0,weightsHiddenToOutput.inspect());
+				// progressCallback(0,'Weight Matrices<br/>Input to Hidden<br/>');
+				// progressCallback(0, weightsInputToHidden.inspect());
+				// progressCallback(0,'<br/>Hidden to Output<br/>');
+				// progressCallback(0,weightsHiddenToOutput.inspect());
 			}	
 	        if (trackingFlag){
 				//initialise stacked array to store tracking data

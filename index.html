@@ -11,26 +11,29 @@
   <meta name="description" content="" />
   <meta name="author" content="Caspar Addyman" />
   <meta name="viewport" content="width=device-width; initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" type="text/css" />
-  <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	
+  <!-- The cascading style sheets(css) we will use -->
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <link rel="stylesheet" href="css/jquery.jqplot.min.css" type="text/css" />
+  <link rel="stylesheet" href="css/ui.jqgrid.css" type="text/css" />
+  <link rel="stylesheet" href="css/diQuery-collapsiblePanel.css" type="text/css" />
   
   <!-- The javascript libraries we will use -->
   <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js?ver=1.6.4'></script>
-  <script type='text/javascript' src='lib/jquery.jqplot.min.js'></script>
-  <link rel="stylesheet" href="lib/jquery.jqplot.min.css" type="text/css" />
-  <link rel="stylesheet" href="lib/diQuery-collapsiblePanel.css" type="text/css" />
-  
+  <script type='text/javascript' src='lib/jquery.jqplot.min.js'></script>  
+  <script type='text/javascript' src='lib/jquery.jqGrid.min.js'></script>
+  <script type='text/javascript' src='lib/jquery.qtip-1.0.0-rc3.min.js'></script>
+  <script type='text/javascript' src='lib/diQuery-collapsiblePanel.js'></script>
+  <script type='text/javascript' src='lib/sylvester.js'></script>
+  <script type='text/javascript' src='lib/seedrandom-min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.barRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.categoryAxisRenderer.min.js'></script>
   <script type="text/javascript" src="lib/plugins/jqplot.canvasTextRenderer.min.js"></script>
   <script type='text/javascript' src='lib/plugins/jqplot.canvasAxisLabelRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
-  <script type='text/javascript' src='lib/jquery.qtip-1.0.0-rc3.min.js'></script>
-  <script type='text/javascript' src='lib/diQuery-collapsiblePanel.js'></script>
-  <script type='text/javascript' src='lib/sylvester.js'></script>
- 
+  <script type='text/javascript' src='lib/plugins/grid.addons.js'></script>
+  <script type='text/javascript' src='lib/plugins/grid.postext.js'></script>
+  <script type='text/javascript' src='lib/plugins/grid.setcolumns.js'></script>
   <!-- The TRACX simulator itself --> 
   <script type='text/javascript' src='tracx.js'></script>
 </head>
@@ -40,9 +43,13 @@
     <header>
       <h1>TRACX simulator</h1>
 	  <fieldset><legend><strong>Truncated Recursive Autoassociative Chunk eXtractor</strong></legend>
-      <p>TRACX is a new model of sequence learning. It is a connectionist autoassociator model which fits a wide range of phenomena from the infant statistical learning and adult implicit learning literature. TRACX outperforms PARSER (Perruchet & Vintner, 1998) and the simple recurrent network (SRN, Cleeremans & McClelland, 1991) in matching human sequence segmentation on existing data. This simulator is written entirely in Javascript and runs locally in your browser. More details of the model can be found in:</p>
-      <p style="font-size:70%">French, R. M., Addyman, C., &amp; Mareschal, D. (2011). TRACX: A recognition-based connectionist framework for sequence segmentation and chunk extraction <em>Psychological Review</em>, 118(4), 614–636. <a href="http://doi.apa.org/getdoi.cfm?doi=10.1037/a0025255">doi:10.1037/a0025255</a> [<a href="French_Psychological_Review_2011-2.pdf" target="_blank">pdf</a> - 872k]</p> 
-		</fieldset>
+      <p>TRACX is a new model of sequence learning. It is a connectionist autoassociator model 
+      	which fits a wide range of phenomena from the infant statistical learning and adult implicit learning literature. TRACX outperforms PARSER (Perruchet & Vintner, 1998) and the simple recurrent network (SRN, Cleeremans & McClelland, 1991) in matching human sequence segmentation on existing data. 
+      	This simulator is written entirely in Javascript and runs locally in your browser. 
+      	A short summary of the algorithm can be found <a href="docs/Summary_TRACX_algorithm.pdf">here</a> 
+      	and more details of the model can be found in:</p>
+      <p style="font-size:70%">French, R. M., Addyman, C., &amp; Mareschal, D. (2011). TRACX: A recognition-based connectionist framework for sequence segmentation and chunk extraction <em>Psychological Review</em>, 118(4), 614–636. <a href="http://doi.apa.org/getdoi.cfm?doi=10.1037/a0025255">doi:10.1037/a0025255</a> [<a href="docs/French_Psychological_Review_2011-2.pdf" target="_blank">pdf</a> - 872k]</p> 
+  </fieldset>
     </header>
     <form id="LearnParams" name='learnparams'>
     	<table><tr><td>
@@ -86,6 +93,10 @@
 	        <tr>
 	            <td>Temperature</td><td><input type="text" id="temperature" class="required" value="1"/></td>
 	        </tr>
+ 	       <tr>
+	            <td>Random Seed</td><td><input type="text" id="randomSeed" class="required" value=""/></td>
+	        </tr>
+
 	        <tr>
 	            <td>Input encoding</td>
 	            <td><input type="radio" name="inputEncoding"  value="local" checked>Local<br>
@@ -130,6 +141,11 @@
 		<div id="mySummary"></div>
 		<div class="collapsibleContainer" title="Tracx internal parameters (click to show/hide)">
 			<div id="extraInfo">The internal parameters used by the network will appear here. </div>
+			<!-- Two grids to hold all the weight matrices -->
+			<table><tr>
+				<td><table id="WeightsIn2Hid"></table></td>
+				<td><table id="WeightsHid2Out"></table></td>
+			</tr></table>
 		</div>
 		<div class="collapsibleContainer" title="Tracx results output (click to show/hide)">
 			<div id="myResults">Results from network at this point in training</div>
@@ -183,7 +199,7 @@
 		<td><input type="checkbox" id="trackingFlag" checked="unchecked"/></td>
 			
 </tr></table><br>
-<em>Test items should be seperated by commas.</em>
+<em>Test items should be separated by commas.</em>
 
 
 				</fieldset>
@@ -210,11 +226,11 @@
 	    	style: 'cream'
 		});
 	   	$('#trainingData').qtip({
-	    	content: 'Training Data<br>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are seperated by carriage returns.',
+	    	content: 'Training Data<br>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are separated by carriage returns.',
 	    	style: 'cream'
 		});
 	   	$('#testWords').qtip({
-	    	content: 'Words from the training corpus. The trained network is tested for it\'s output error for each word individually. Words are seperated by commas.',
+	    	content: 'Words from the training corpus. The trained network is tested for it\'s output error for each word individually. Words are separated by commas.',
 	    	style: 'cream'
 		});
 	   	$('#testPartWords').qtip({
@@ -243,6 +259,10 @@
 		});
 		$('#sentenceRepetitions').qtip({
 	    	content: 'How often do we repeat each sentence/utterance in the learning corpus.<br><em>Default: 6</em>',
+	    	style: 'cream'
+		});
+		$('#randomSeed').qtip({
+	    	content: 'Type any string you like to get a repeatable random starting seed. Leave blank to use different random seed each time. A copy of the randomly selected seed is output in the network output to allow you to replay a given run.',
 	    	style: 'cream'
 		});
 		$('#localEncoding').qtip({
@@ -388,6 +408,7 @@
 		});
 		//and the number of subjects for batch mode
 		networkParams.numberSubjects = parseFloat($('#numberSubjects').val());
+		networkParams.randomSeed = $('#randomSeed').val();
 		//which encoding scheme do we use?
 		networkParams.inputEncoding  = $("input[name='inputEncoding']:checked").val();
 		//which delta rule?
@@ -419,6 +440,8 @@
 							NonWords:$("#testNonWords").val()
 						 });
 		TRACX.reset();
+		gridWeights("Input to Hidden", "#WeightsIn2Hid",TRACX.getWeightsIn2Hid().elements);
+		gridWeights("Hidden to Output","#WeightsHid2Out",TRACX.getWeightsHid2Out().elements);
 		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: 0</em>");
    	}
         
@@ -540,19 +563,6 @@
 	            renderer:$.jqplot.BarRenderer,
 	            rendererOptions: {fillToZero: true}
 	        },
-	        // Custom labels for the series are specified with the "label"
-	        // option on the series option.  Here a series option object
-	        // is specified for each series.
-	        // series:[
-	            // {label:'Word'},
-	            // {label:'Part Word'},
-	            // {label:'Non Word'}
-	        // ],
-	        // // Show the legend and put it inside the grid
-	        // legend: {
-	            // show: true,
-	            // placement: 'outsideGrid'
-	        // },
 	        axes: {
 	            // Use a category axis on the x axis and use our custom ticks.
 	            xaxis: {
@@ -685,6 +695,30 @@
 	    	});
 	    	
     }
+    function gridWeights(gridCaption,gridName,WeightMatrix){
+    	
+    	//first set up right number of columns
+    	var colModels = [];
+    	for(var col=1;col<=WeightMatrix[0].length;col++){
+    		colModels.push({name:col,width:44}) 
+    	}
+    	//then set up grid itself
+    	jQuery(gridName).jqGrid({
+			datatype: "local",
+			height: 250,
+		    colModel:colModels,
+		    cmTemplate: {sortable:false},
+		   	multiselect: false,
+		   	caption: gridCaption
+		});
+		//finally add the cell data
+		for(var r=0;r<WeightMatrix.length;r++){
+		 	jQuery(gridName).jqGrid('addRowData',r,{1:0});
+			for(var c=0;c<WeightMatrix[0].length;c++){
+				jQuery(gridName).jqGrid('setCell',r,c,WeightMatrix[r][c].toFixed(4));			
+			}
+    	}
+	}
 	</script>
 
     <footer>

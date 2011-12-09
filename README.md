@@ -15,7 +15,8 @@ http://www.jqplot.com/
 Sylvester 0.1.3 or greater
 http://sylvester.jcoglan.com/
 
-
+David Bau's Random Seed function
+http://davidbau.com/archives/2010/01/30/random_seeds_coded_hints_and_quintillions.html
 
 Optional:
 =========
