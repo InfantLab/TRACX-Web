@@ -109,6 +109,11 @@
 	                <input type="radio" name="deltaRule" value="rms">Root mean square error<br>
 	            </td>
 	        </tr>
+	        <tr>
+	        	<td colspan="2">
+			        <input type="button" id="resetParams" value="Reset to defaults" />
+	        	</td>
+			</tr>	    	
 	    </table>
 	</fieldset>
 </td></tr></table>
@@ -325,7 +330,8 @@
 		});
 	});
 
-	//add a click events to the calculation buttons
+	//add click events to the  buttons
+ 	$('#resetParams').click(resetParameters);
  	$('#reset').click(initialiseNetwork);
  	$('#stepPlus1').click(function() {handleCalculate(1);});
  	$('#stepPlus1percent').click(function() {handleCalculate("1%");});
@@ -334,41 +340,57 @@
  	$('#calculate').click(function() {handleCalculate(-1);});
  	$('#batchRun').click(function() {handleCalculate(-1000);});
 	
+	//tell page what to do when use selects a data file.
+	$('#userDataFiles').change(function(){handleDataFileSelect(false)});
 	
 	//fetches learning data for prespecified simulations from the server
-	function sendValue(str){
-		$.post("ajax.php", { sendToValue: str },
+	function updateFromServer(simulationName,updateOptions){
+		if (!updateOptions)
+			updateOptions = {reloadDataSet:true,reloadTestItems:true,reloadParameters:true};
+		$.post("ajax.php", { sendToValue: simulationName },
 			function(data){
-				//fill the track learning items
-			    $("#trackingFlag").val(data.tracklearning.trackingFlag);
-			    $("#trackingBigrams").val(data.tracklearning.trackingBigram.join(","));
-			    $("#trackingInterval").val(data.tracklearning.trackingInterval);			    
-			    //fill in the trainingData
-			    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
-			    //fill in the test items
-			    $("#testWords").val(data.testitems.word.join(","));
-			    $("#testPartWords").val(data.testitems.partword.join(","));
-			    $("#testNonWords").val(data.testitems.nonword.join(","));
-			    //fill in the learning params
-			    for(p in data.params){
-			    	$("#"+p).val(data.params[p]);
-			    }
+				var opt = updateOptions;
+				if(opt.reloadDataSet){
+					//fill the track learning items
+				    $("#trackingFlag").val(data.tracklearning.trackingFlag);
+				    $("#trackingBigrams").val(data.tracklearning.trackingBigram.join(","));
+				    $("#trackingInterval").val(data.tracklearning.trackingInterval);			    
+				    //fill in the trainingData
+				    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
+				}
+				if(opt.reloadTestItems){
+				    //fill in the test items
+				    $("#testWords").val(data.testitems.word.join(","));
+				    $("#testPartWords").val(data.testitems.partword.join(","));
+				    $("#testNonWords").val(data.testitems.nonword.join(","));
+				}
+				if(opt.reloadParameters){
+					fillParameters(data.params);
+				}
  			}, 
 			"json");
 	}
 	//add an event to fetch simulation data from the website
- 	$('#simulationSelect').change(function(){
+ 	$('#simulationSelect').change(function(){reloadFromServer()});
+ 	
+ 	function reloadFromServer(options){
 		//get simulation data by id number
-		var temp = $(this).val().split(".");
+		var temp = $('#simulationSelect').val().split(".");
 		var simulationNumber=temp[0] -1;
 //		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","giroux","frank1","frank3","brent","notavailable","notavailable","french","kirkham"];
 		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","notavailable","notavailable","notavailable","notavailable","notavailable","notavailable","french","kirkham"];
-		sendValue(simulationName[simulationNumber]);	
+		updateFromServer(simulationName[simulationNumber]);	
 		initialiseNetwork();
-	});
+	}
 
+    //fill in the learning params
+	function fillParameters(params){
+	    for(p in params){
+	    	$("#"+p).val(params[p]);
+	    }
+	}
 	//function to load the data from a file on the computer
-	function handleFileSelect(evt) {
+	function handleDataFileSelect(evt) {
 	    var files = evt.target.files; // FileList object
 		//clear old training data
 		$("textarea#trainingData").text("");
@@ -386,8 +408,6 @@
 	      reader.readAsText(f);
 	    }
 	}
-	//tell page what to do when use selects a data file.
-	document.getElementById('userDataFiles').addEventListener('change', handleFileSelect, false);
 
 	//clear the old graphs
 	function clearGraphs(){
@@ -401,6 +421,9 @@
 		$('#chartHidden').empty();  
  		$('#chartOutput1').empty();  
 		$('#chartOutput2').empty();  
+	}
+	function resetParameters(){
+		reloadFromServer({reloadParameters:true});
 	}
 
    	function initialiseNetwork(){
@@ -445,7 +468,7 @@
         var loggingLevel = 1;
         
         //do we track learning as we go along?
-        TRACX.setTrackingData({ flag:$("#trackingFlag").val(),
+        TRACX.setTrackingData({flag:$("#trackingFlag").val(),
         						bigrams:$("#trackingBigrams").val(),
         						interval:$("#trackingInterval").val()        	
       						});		
@@ -508,8 +531,8 @@
  		}
 		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: " + TRACX.getCurrentStep() + "</em>");
 
+		// successful training display the graphs
 		clearGraphs();
-
 		var graphVals = [];
     	$('#myResults').append("<br><em>Testing:</em><br>");
         $('#myResults').append("Words :" + $("#testWords").val() + "<br>");
@@ -590,12 +613,14 @@
 	}
 	
 	function plotLearning(trackingSteps, trackingOutputs){
-		var serieslabels = [];
-		var seriesdata = []
-		for (var i = 0; i < 10; i++){
-		
+		if (!trackingSteps || !trackingOutputs){
+			//somethinge missing, can't plot
+			return; 
 		}
 		
+		var serieslabels = [];
+		var seriesdata = []
+
 		for(x in trackingOutputs){
 			serieslabels.push({label:x});
 			seriesdata.push(trackingOutputs[x]);

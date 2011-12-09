@@ -11,12 +11,12 @@
  */
 var TRACX = (function () { 
     var API = {}; //a variable to hold public interface for this module
-    API.Version = '0.1.5'; //version number for 
-    API.VersionDate = "05-November-2011";
+    API.Version = '0.1.6'; //version number for 
+    API.VersionDate = "08-December-2011";
     
     //private variables
     var trainingData,userEncodings, inputEncodings,
-   		lastDelta, //used in training 
+ 		lastDelta, //used in training 
    		weightsInputToHidden, weightsHiddenToOutput, //weight matrices
    		OLD_deltaWeightsInputToHidden, OLD_deltaWeightsHiddenToOutput,  //old matrices for momentum calc
    		testWords, testPartWords, testNonWords, //test items
@@ -26,7 +26,7 @@ var TRACX = (function () {
     var params = {
     	learningRate: 0.04,
     	recognitionCriterion: 0.4,
-		reinforcementThreshold: 0.25,
+		reinforcementProbability: 0.25,
 		momentum: 0,
 		temperature: 1.0,
 		fahlmanOffset: 0.1,
@@ -39,13 +39,13 @@ var TRACX = (function () {
 		testErrorType:'final'  //final,average,conditional
 	};
     
-    //variables for stting through
+    //variables for stepping through
 	var letters, currentStep, maxSteps,inputLength,startSimulation, net, testResults;
      
+
 	/**********************************************
 	 **** Getting and setting variables			*** 
-	 **********************************************/
- 
+	 **********************************************/ 
     API.setParameters = function (parameters) { 
         params = parameters;
         //force fahlmanOffset & bias to be default values
@@ -183,7 +183,7 @@ var TRACX = (function () {
 	 **** Many of these are taken directly from ***
 	 **** http://rosettacode.org 				***
 	 **********************************************/
-
+	
 	//sum up the elements of array
 	function sum (x) {
 		for(var i=0,sum=0;i<x.length;sum+=x[i++]);
@@ -192,17 +192,16 @@ var TRACX = (function () {
 
 	//a fairly standard network error function
 	function rootmeansquare(ary) {
-	// Array.reduce not implemented in all browsers
-	//    var sum_of_squares = ary.reduce(function(s,x) {return (s + x*x)}, 0);
-	//so use simple loop version 
-	for(var i=0,sum_of_squares=0;i<ary.length;i++){sum_of_squares+=ary[i]*ary[i];};
-	return Math.sqrt(sum_of_squares / ary.length);
+		// Array.reduce not implemented in all browsers
+		//    var sum_of_squares = ary.reduce(function(s,x) {return (s + x*x)}, 0);
+		//so use simple loop version 
+		for(var i=0,sum_of_squares=0;i<ary.length;i++){sum_of_squares+=ary[i]*ary[i];};
+		return Math.sqrt(sum_of_squares / ary.length);
 	}
 
 	//mean value of elements in array
-	function mean (x) {
-	    return sum(x) / x.length;
-	}
+	function mean (x) { return sum(x) / x.length;}
+	
 	//standard deviation function.
 	function stdev(x) {
 		var variance = 0.0;
@@ -226,7 +225,7 @@ var TRACX = (function () {
 	
 	function tanh (x) {
     	//slow tanh fn
-    	// sinh(number)/cosh(number)
+    	//sinh(number)/cosh(number)
 	    return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
 	}
 	function rational_tanh(x){
@@ -426,7 +425,7 @@ var TRACX = (function () {
 				// since internal representations are attentionally weaker than input
 				// from the real, external world.
 				if ((lastDelta > params.recognitionCriterion) //train netowrk if error large
-				 || (Math.random() <= params.reinforcementThreshold))//or if small error and below threshold
+				 || (Math.random() <= params.reinforcementProbability))//or if small error and below threshold
 				 {
 					backPropogateError(net);
 					net = API.networkOutput(Input_t1,Input_t2);
