@@ -152,9 +152,6 @@
 				<td><table id="WeightsHid2Out"></table></td>
 			</tr></table>
 		</div>
-		<div class="collapsibleContainer" title="Tracx results output (click to show/hide)">
-			<div id="myResults">Results from network at this point in training</div>
-		</div>
 		<!-- A table to hold all the output graphs -->
 		<table><tr>
 			<td>
@@ -179,7 +176,13 @@
 							<td><div id="chartInput1" style="height:150px;width:240px "></div></td>
 							<td><div id="chartInput2" style="height:150px;width:240px "></div></td>
 						</tr>
-						
+						<tr>
+							<td colspan = 2>
+								<div class="collapsibleContainer" title="Show/Hide data..">
+								<table id="gridActivations"></table>
+								</div>
+							</td>
+						</tr>
 					</table>
 				</fieldset>
 			</td>
@@ -200,6 +203,13 @@
 	<td><input id="testNonWords" rows="1" cols="50" value="ad,bf,fd"></input></td>
 </tr>
 	<tr>
+		<td colspan = 3>
+			<div class="collapsibleContainer" title="Show/Hide data..">
+			<table id="gridOutputError"></table>
+			</div>
+		</td>
+	</tr>
+	<tr>
 		<td colspan = 3>	
 			<div id="chartTrackLearning" style="height:230px;width:400px "></div>
 		</td>
@@ -211,8 +221,15 @@
 		<td><input id="trackingBigrams" class="required"  value="ab,ad"></input></td>
 		<td><input id="trackingInterval"  value="25"></input></td>
 		<td><input type="checkbox" id="trackingFlag" checked="unchecked"/></td>
-			
-</tr></table><br>
+	</tr>
+	<tr>
+		<td colspan = 3>
+			<div class="collapsibleContainer" title="Show/Hide data..">
+			<table id="gridTrackLearning"></table>
+			</div>
+		</td>
+	</tr>
+</table><br>
 <em>Test items should be separated by commas.</em>
 
 
@@ -518,51 +535,63 @@
 	        //THIS LINE DOES ALL THE HARD WORK
 	        var ret = TRACX.stepThroughTraining(steps,function(importance, message) {
 			    // this anonymous function will run when the progress callback is called
-			    if (importance > 0){
-				    $('#myResults').append(message);
-			    }else{
-			    	$('#extraInfo').append(message);
-			    }
+		    	$('#extraInfo').append(message);
 			});
 			if (!ret.trainSuccess){
-				 $('#myResults').append("<em>***Training failed***</em>");
+				 $('#extraInfo').append("<em>***Training failed***</em>");
 				return;
 			}
  		}
 		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: " + TRACX.getCurrentStep() + "</em>");
 
-		// successful training display the graphs
+		// training was successful display the results
+		//setup grid of results
+		var colModel = [];
+		colModel.push({name:'Type', width:64});
+		colModel.push({name:'Words',  width:64});
+		colModel.push({name:'Part Words',  width:64});
+		colModel.push({name:'Non Words' ,  width:64});
+		gridSetup("#gridOutputError","",colModel);
+		$("#gridOutputError").jqGrid('addRowData',1,{1:0});
+		$("#gridOutputError").jqGrid('addRowData',2,{1:0});
 		clearGraphs();
 		var graphVals = [];
-    	$('#myResults').append("<br><em>Testing:</em><br>");
-        $('#myResults').append("Words :" + $("#testWords").val() + "<br>");
+		var graphErrors = [];
 		if (ret.Words.mean){			
-	    	$('#myResults').append(ret.Words.mean.toFixed(3) + " (+/- " + ret.Words.sd.toFixed(3) + ")<br>");
 	        graphVals.push(ret.Words.mean);
+	        graphErrors.push(ret.Words.sd);
+	        $("#gridOutputError").jqGrid('setCell',1,0,"Mean");
+			$("#gridOutputError").jqGrid('setCell',1,1,ret.Words.mean.toFixed(3));
+			$("#gridOutputError").jqGrid('setCell',2,0,"+/- 1SD");
+			$("#gridOutputError").jqGrid('setCell',2,1, ret.Words.sd.toFixed(3));			
        	}else{
-       		$('#myResults').append("-<br>");
 	        graphVals.push(0);      	
+	        graphErrors.push(0);      	
        	}
-        $('#myResults').append("Part Words :" + $("#testPartWords").val() + "<br>");
     	if (ret.PartWords.mean){			
-	    	$('#myResults').append(ret.PartWords.mean.toFixed(3) + " (+/- " + ret.PartWords.sd.toFixed(3) + ")<br>");
 	        graphVals.push(ret.PartWords.mean);
+	        graphErrors.push(ret.PartWords.sd);
+			$("#gridOutputError").jqGrid('setCell',1,2,ret.PartWords.mean.toFixed(3));
+			$("#gridOutputError").jqGrid('setCell',2,2, ret.PartWords.sd.toFixed(3));
        	}else{
-       		$('#myResults').append("-<br>");
-	        graphVals.push(0);      	
+	        graphVals.push(0);  
+	        graphErrors.push(0);    	
        	}
-        $('#myResults').append("Non Words :" + $("#testNonWords").val() + "<br>");
     	if (ret.NonWords.mean){			
-	    	$('#myResults').append(ret.NonWords.mean.toFixed(3) + " (+/- " + ret.NonWords.sd.toFixed(3) + ")<br>");
 	        graphVals.push(ret.NonWords.mean);
-       	}else{
-       		$('#myResults').append("-<br>");
-	        graphVals.push(0);      	
+	        graphErrors.push(ret.NonWords.sd);
+			$("#gridOutputError").jqGrid('setCell',1,3,ret.NonWords.mean.toFixed(3));
+			$("#gridOutputError").jqGrid('setCell',2,3, ret.NonWords.sd.toFixed(3));
+	   	}else{
+	        graphVals.push(0);  
+	        graphErrors.push(0);    	
        	}
-	
-		//PLOT ALL THE GRAPHS
-	  	plotBarGraph(graphVals);
+		
+		//PLOT ALL THE GRAPHS & GRIDS
+	  	plotBarGraph(graphVals, graphErrors);
   		plotLearning(ret.trackingSteps, ret.trackingOutputs);
+       	gridTrackLearning(ret.trackingSteps,ret.trackingOutputs);
+       	
        	var currentString = TRACX.getLastTrainingItems(4);
        	plotActivations(currentString);
        	
@@ -591,11 +620,11 @@
 	        axes: {
 	            // Use a category axis on the x axis and use our custom ticks.
 	            xaxis: {
-	                renderer: $.jqplot.CategoryAxisRenderer,
+	            	renderer: $.jqplot.CategoryAxisRenderer,
 	                ticks: ticks,
 	                // label: 'Item Types',
 					labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-	            },
+	         	},
 	            // Pad the y axis just a little so bars can get close to, but
 	            // not touch, the grid boundaries.  1.2 is the default padding.
 	            yaxis: {
@@ -628,25 +657,18 @@
 	    var plot2 = $.jqplot ('chartTrackLearning',seriesdata, {
 			  // Give the plot a title.
 			  title: 'Bigram error over time',
-			  axesDefaults: {
-			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-			  },
- 	          legend: {
-		            show: true,
-		            placement: 'outsideGrid'
-		      },
+			  axesDefaults: { labelRenderer: $.jqplot.CanvasAxisLabelRenderer },
+ 	          legend: { show: true, placement: 'outsideGrid'},
 			  series:serieslabels,
 			  axes: {
 			  	xaxis: {
 			 		label: "Number  of training items",
   			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
 			  		// ticks: trackingSteps, //leave this out to let it calculate automagically
-			  		pad: 0
-					},
+			  		pad: 0 },
 				yaxis: {
 			  		label: "Mean Error",
-			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-			    	}
+			  		labelRenderer: $.jqplot.CanvasAxisLabelRenderer	}
 				}
 	    });
     }
@@ -659,11 +681,11 @@
 		TRACX.setSingleParameter('testErrorType','conditional');
 	    ret = TRACX.testString(bigram);
 	    var len = ret.activations.In.elements[0].length /2;
-	    var input1 = [ret.activations.In.elements[0].slice(0,len)];
-	    var input2 = [ret.activations.In.elements[0].slice(len)];
-	    var hidden = [ret.activations.Hid.elements[0].slice(0,len)];
-	    var output1 = [ret.activations.Out.elements[0].slice(0,len)];
-	    var output2 = [ret.activations.Out.elements[0].slice(len)];
+	    var input1  = ret.activations.In.elements[0].slice(0,len);
+	    var input2  = ret.activations.In.elements[0].slice(len);
+	    var hidden  = ret.activations.Hid.elements[0].slice(0,len);
+	    var output1 = ret.activations.Out.elements[0].slice(0,len);
+	    var output2 = ret.activations.Out.elements[0].slice(len);
 	   
 	   	$('#Delta').html('<em style="font-size:2ex;">&Delta; = ' + ret.finalDelta.toFixed(3) + '<em>');
 	    var letter1; 
@@ -681,9 +703,28 @@
 	    plotSingleActivation('chartHidden','Hidden',hidden);
 	    plotSingleActivation('chartOutput1','Output 1',output1);
 	    plotSingleActivation('chartOutput2','Output 2',output2);
+
+		//fill grid
+		var colModel = [];
+		colModel.push({name:'Input 1: ' + letter1,  width:64});
+		colModel.push({name:'Input 2: ' + letter2,  width:64});
+		colModel.push({name:'Hidden' ,  width:64});
+		colModel.push({name:'Output 1',  width:64});		
+		colModel.push({name:'Output 2',  width:64});
+				
+		gridSetup("#gridActivations","",colModel);
+
+		for(var r=0;r<len;r++){
+			$("#gridActivations").jqGrid('addRowData',r,{1:0});
+			$("#gridActivations").jqGrid('setCell',r,0,input1[r].toFixed(3));		
+			$("#gridActivations").jqGrid('setCell',r,1,input2[r].toFixed(3));		
+			$("#gridActivations").jqGrid('setCell',r,2,hidden[r].toFixed(3));		
+			$("#gridActivations").jqGrid('setCell',r,3,output1[r].toFixed(3));		
+			$("#gridActivations").jqGrid('setCell',r,4,output2[r].toFixed(3));		
+		}
     }
     function plotSingleActivation(plotName,plotTitle,data){
-    	$.jqplot(plotName, data, 
+    	$.jqplot(plotName, [data], 
 	    	{	title: plotTitle,
 	        	seriesDefaults:{renderer:$.jqplot.BarRenderer,rendererOptions: {fillToZero: true}},
 	        	legend: {show: false},
@@ -701,21 +742,56 @@
     		colModels.push({name:col,width:44}) 
     	}
     	//then set up grid itself
-    	jQuery(gridName).jqGrid({
+    	gridSetup(gridName,gridCaption,colModels);
+    	//finally add the cell data
+		for(var r=0;r<WeightMatrix.length;r++){
+		 	$(gridName).jqGrid('addRowData',r,{1:0});
+			for(var c=0;c<WeightMatrix[0].length;c++){
+				$(gridName).jqGrid('setCell',r,c,WeightMatrix[r][c].toFixed(4));			
+			}
+    	}
+	}
+	//display the learning data in a grid
+	function gridTrackLearning(trackingSteps, trackingOutputs){
+		if (!trackingSteps || !trackingOutputs){
+			//somethinge missing, can't plot
+			return; 
+		}
+		
+		var serieslabels = [];
+		serieslabels.push({name:'Step',width:30});
+		for(x in trackingOutputs){
+			serieslabels.push({name:x,width:44});
+		}
+		
+    	//then set up grid itself
+    	gridSetup("#gridTrackLearning","Learning over time - raw data",serieslabels);
+		//add the correct number of rows
+		for(var r=0;r<trackingSteps.length;r++){
+			$("#gridTrackLearning").jqGrid('addRowData',r,{1:0});
+			$("#gridTrackLearning").jqGrid('setCell',r,0,trackingSteps[r]);
+		}
+		//finally add the cell data
+		var c = 0;
+		for(x in trackingOutputs){
+			c++;
+			for(var r=0;r<trackingOutputs[x].length;r++){
+				var stepData = trackingOutputs[x][r];
+				$("#gridTrackLearning").jqGrid('setCell',r,c,stepData[1].toFixed(3));			
+			}
+    	}
+	}
+	function gridSetup(gridName,gridCaption,colModel){
+	  	//then set up grid itself
+    	$(gridName).jqGrid({
 			datatype: "local",
 			height: 250,
-		    colModel:colModels,
+		    colModel:colModel,
 		    cmTemplate: {sortable:false},
 		   	multiselect: false,
 		   	caption: gridCaption
 		});
-		//finally add the cell data
-		for(var r=0;r<WeightMatrix.length;r++){
-		 	jQuery(gridName).jqGrid('addRowData',r,{1:0});
-			for(var c=0;c<WeightMatrix[0].length;c++){
-				jQuery(gridName).jqGrid('setCell',r,c,WeightMatrix[r][c].toFixed(4));			
-			}
-    	}
+		$(gridName).jqGrid('clearGridData');
 	}
 	</script>
 
