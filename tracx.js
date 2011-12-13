@@ -5,14 +5,19 @@
  * (TRACX, French, Addyman & Mareschal, Psych Rev, 2011) A neural network
  * that performs sequence segmentation and chunk extraction in artifical
  * grammar learning tasks and statistical learning tasks.
+ * See http://leadserv.u-bourgogne.fr/~tracx/
  *
  * Note it uses the sylvester maths libaries to perform matrix multiplications
  *  http://sylvester.jcoglan.com/
+ * 
+ * Copyright Caspar Addyman 2011
+ * Full source code available from 
+ * https://github.com/YourBrain/TRACX-Web
  */
 var TRACX = (function () { 
     var API = {}; //a variable to hold public interface for this module
-    API.Version = '0.1.6'; //version number for 
-    API.VersionDate = "08-December-2011";
+    API.Version = '0.1.7'; //version number for 
+    API.VersionDate = "13-December-2011";
     
     //private variables
     var trainingData,userEncodings, inputEncodings,
