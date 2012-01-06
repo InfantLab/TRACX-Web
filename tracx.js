@@ -113,7 +113,7 @@ var TRACX = (function () {
    		if (params.randomSeed){
 	   		params.randomSeed =  Math.seedrandom(params.randomSeed);
    		}else{
-   			params.randomSeed =  Math.seedrandom();
+   			params.randomSeed =  Math.seedrandom(randomString());
    		}
    		API.initializeWeights();
    	}
@@ -134,6 +134,19 @@ var TRACX = (function () {
 	 **********************************************/ 
     function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
+	}
+	
+	//seedrandom.js is a bit TOO random because it includes non-printingcharacters
+	//so use this 
+	function randomString() {
+		var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+		var string_length = 30;
+		var randomstring = '';
+		for (var i=0; i<string_length; i++) {
+			var rnum = Math.floor(Math.random() * chars.length);
+			randomstring += chars.substring(rnum,rnum+1);
+		}
+		return randomstring;
 	}
 	
 	//convert decimal number into a binary array representation
@@ -546,7 +559,7 @@ var TRACX = (function () {
    		if (params.randomSeed){
    			params.randomSeed =  Math.seedrandom(params.randomSeed);
    		}else{
-   			params.randomSeed =  Math.seedrandom();
+   			params.randomSeed =  Math.seedrandom(randomString());
    		}
    		progressCallback(1,"Random seed used: " + params.randomSeed + "<br/>");
    		startSimulation = new Date();
