@@ -10,7 +10,7 @@
   <title>TRACX simulator</title>
   <meta name="description" content="" />
   <meta name="author" content="Caspar Addyman" />
-  <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	
   <!-- The cascading style sheets(css) we will use -->
   <link rel="stylesheet" href="css/style.css" type="text/css" />
@@ -32,6 +32,7 @@
   <script type='text/javascript' src='lib/plugins/jqplot.canvasAxisLabelRenderer.min.js'></script>
   <script type='text/javascript' src='lib/plugins/jqplot.pointLabels.min.js'></script>
   <script type='text/javascript' src='lib/plugins/grid.addons.js'></script>
+  <script type='text/javascript' src='lib/plugins/grid.custom.js'></script>
   <script type='text/javascript' src='lib/plugins/grid.postext.js'></script>
   <script type='text/javascript' src='lib/plugins/grid.setcolumns.js'></script>
   <!-- The TRACX simulator itself --> 
@@ -60,7 +61,7 @@
 	        	<option>2. Aslin et al., 1998</option>
 	        	<option>3. Perruchet &amp; Desaulty, 2008 (Forward TPs)</option>
 	        	<option>4. Perruchet &amp; Desaulty, 2008 (Backward TPs)</option>
-	        	<option>5. #NA# Giroux &amp; Rey, 2009</option>
+	        	<option>5. Giroux &amp; Rey, 2009</option>
 	        	<option>6. #NA# Frank et al., 2010 -  Experiment 1</option>
 	        	<option>7. #NA# Frank et al., 2010 -  Experiment 3</option>
 	        	<option>8. #NA# Brent &amp; Cartwright, 1996,</option>
@@ -71,7 +72,11 @@
 	        <label for="dataselection">Or select file</label>
 	     	<input type="file" id="userDataFiles" multiple /><br>
 			<textarea id="trainingData" class="required" rows="5" cols="60">babefefcdabefabababefcdefefcdefabefabefababefcdefabcdefcdcdcdefefcdcdabefabefcdefcdcdababefcdabcdefcdefababcdabefefcdabefabcdefcdababefcdefcdefabefefcdcdcdcdefefababababefcdcdefefc</textarea><br>
-			<em>Each training sentence should begin on a new line.</em>
+			<em>Sentences should each begin on a new line or be separated by commas.</em><br>
+			<div class="collapsibleContainer" title="Simulation details (click to show/hide)">
+				<div id="simulationDetails">A short explanation of the original study will appear here. </div>
+			</div>
+
 		</fieldset>
 	</td><td>
 		<fieldset id="paramsform">
@@ -215,10 +220,10 @@
 		</td>
 	</tr>
 	<tr>
-		<td>Test bigrams..</td>	<td>..every N steps:</td><td>On/Off</td>
+		<td>Test words..</td>	<td>..every N steps:</td><td>On/Off</td>
 	</tr>
 	<tr>
-		<td><input id="trackingBigrams" class="required"  value="ab,ad"></input></td>
+		<td><input id="trackingTestWords" class="required"  value="ab,ad"></input></td>
 		<td><input id="trackingInterval"  value="25"></input></td>
 		<td><input type="checkbox" id="trackingFlag" checked="unchecked"/></td>
 	</tr>
@@ -233,10 +238,10 @@
 <em>Test items should be separated by commas.</em>
 
 
-				</fieldset>
-			</td>
-		</tr></table>
-	</fieldset>
+			</fieldset>
+		</td>
+	</tr></table>
+</fieldset>
 
 		
 <script type='text/javascript'>
@@ -247,104 +252,37 @@
 		//note we use a slightly modified version of this plugin that defaults to collapsed 
 		$(".collapsibleContainer").collapsiblePanel();
 		
+		//function to add a tooltip to this display item
+		function addQtip(objName,tipText){
+			$(objName).qtip({content: tipText,style: 'cream'});
+		}
 		/******************************************************
 		 * SOME HELP AND DESCRIPTION OF INPUTS AND PARAMETERS *
 		 * APPEARS AS 'TOOLTIPS' WHEN USER HOVERS MOUSE OVER  *
 		 * FIELDS OR BUTTONS                                  *
 		 ******************************************************/
-	   	$('#simulationSelect').qtip({
-	    	content: 'Click to select preset data.',
-	    	style: 'cream'
-		});
-	   	$('#trainingData').qtip({
-	    	content: 'Training Data<br>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings are separated by carriage returns.',
-	    	style: 'cream'
-		});
-	   	$('#testWords').qtip({
-	    	content: 'Words from the training corpus. The trained network is tested for it\'s output error for each word individually. Words are separated by commas.',
-	    	style: 'cream'
-		});
-	   	$('#testPartWords').qtip({
-	    	content: 'Sequences of tokens encountered during training but which cross notional word boundaries.',
-	    	style: 'cream'
-		});
-	   	$('#testNonWords').qtip({
-	    	content: 'Sequences of tokens that were not encountered during training.',
-	    	style: 'cream'
-		});
-	   	$('#learningRate').qtip({
-	    	content: 'By how much do we adjust the weight matrices on each cycle of backpropogation.<br><em>Defaults:<br>Artificial grammar: 0.04<br>Real world corpus: 0.004</em>',
-	    	style: 'cream'
-		});
-		$('#recognitionCriterion').qtip({
-	    	content: 'Maximum output error must be below this value for all nodes before network is deemed to recognise an input pair. When an input pair is recognised the hidden unit activations are passed back as an input for the next step.<br><em>Default: 0.3</em>',
-	    	style: 'cream'
-		});
-		$('#reinforcementProbability').qtip({
-	    	content: 'Learning is weaker for hidden representations. Therefore we only backpropogate errors this proportion of the time (determined probablistically by <em>Math.random() < reinforcementProbability</em>) .<br><em>Default: 0.25</em>',
-	    	style: 'cream'
-		});
-		$('#momentum').qtip({
-	    	content: 'Standard backpropogation momentum parameter.<br><em>Default: 0.0</em>',
-	    	style: 'cream'
-		});
-		$('#sentenceRepetitions').qtip({
-	    	content: 'How often do we repeat each sentence/utterance in the learning corpus.<br><em>Default: 6</em>',
-	    	style: 'cream'
-		});
-		$('#randomSeed').qtip({
-	    	content: 'Type any string you like to get a repeatable random starting seed. Leave blank to use different random seed each time. A copy of the randomly selected seed is output in the network output to allow you to replay a given run.',
-	    	style: 'cream'
-		});
-		$('#localEncoding').qtip({
-	    	content: 'Each letter encoding as a bipolar local array. +1 in one location and  -1 in all others.',
-	    	style: 'cream'
-		});
-    	$('#distributedEncoding').qtip({
-	    	content: 'Each letter numbered and represented by corresponding 8bit binary array of 1s and -1s. e.g. if there were 12 different letters, the 12th letter would be <br>-1,-1,-1,-1, 1, 1, -1, -1 ',
-	    	style: 'cream'
-		});
-		$('#numberSubjects').qtip({
-	    	content: 'How many times do we run the full simulation and test?<br><em>Default: 1</em>',
-	    	style: 'cream'
-		});
-		$('#temperature').qtip({
-	    	content: 'What is the slope of the hyperbolic tanget activation function?<br><em>Default: 1</em>',
-	    	style: 'cream'
-		});
-		$('#reset').qtip({
-	    	content: 'Reset all training.',
-	    	style: 'cream'
-		});
-		$('#stepPlus1').qtip({
-	    	content: 'Move one step further through the training data.',
-	    	style: 'cream'
-		});
-		$('#stepPlus1Percent').qtip({
-	    	content: 'Move one percent further through the training data.',
-	    	style: 'cream'
-		});
-		$('#stepPlus10').qtip({
-	    	content: 'Move ten steps further through the training data.',
-	    	style: 'cream'
-		});
-		$('#stepPlus10Percent').qtip({
-	    	content: 'Move ten percent further through the training data.',
-	    	style: 'cream'
-		});
-		$('#calculate').qtip({
-	    	content: 'Run to the end of one full pass through the training set.',
-	    	style: 'cream'
-		});
-		$('#calculate').qtip({
-	    	content: 'Run to the end of one full training set.',
-	    	style: 'cream'
-		});
-
-		$('#batchRun').qtip({
-	    	content: 'For each subject we create a new untrained network by randomly initialising a new set of weights matrices. We train this network on the training data and then test with each of the word, part-word and non-word stimuli. Progress is shown below and mean results are plotted graphically.',
-	    	style: 'cream'
-		});
+	   	addQtip('#simulationSelect','Click to select preset data.');
+	   	addQtip('#trainingData','Training Data<br>A series of strings of characters, where each character represents one syllable or phoneme and each string represents one sentence or utterance. Strings can separated by commas or carriage returns.');
+	   	addQtip('#testWords','Words from the training corpus. The trained network is tested for it\'s output error for each word individually. Words are separated by commas.');
+	   	addQtip('#testPartWords','Sequences of tokens encountered during training but which cross notional word boundaries.');
+	   	addQtip('#testNonWords','Sequences of tokens that were not encountered during training.');
+	   	addQtip('#learningRate','By how much do we adjust the weight matrices on each cycle of backpropogation.<br><em>Defaults:<br>Artificial grammar: 0.04<br>Real world corpus: 0.004</em>');
+		addQtip('#recognitionCriterion','Maximum output error must be below this value for all nodes before network is deemed to recognise an input pair. When an input pair is recognised the hidden unit activations are passed back as an input for the next step.<br><em>Default: 0.3</em>');
+		addQtip('#reinforcementProbability','Learning is weaker for hidden representations. Therefore we only backpropogate errors this proportion of the time (determined probablistically by <em>Math.random() < reinforcementProbability</em>) .<br><em>Default: 0.25</em>');
+		addQtip('#momentum','Standard backpropogation momentum parameter.<br><em>Default: 0.0</em>');
+		addQtip('#sentenceRepetitions','How often do we repeat each sentence/utterance in the learning corpus.<br><em>Default: 6</em>');
+		addQtip('#randomSeed','Type any string you like to get a repeatable random starting seed. Leave blank to use different random seed each time. A copy of the randomly selected seed is output in the network output to allow you to replay a given run.');
+		addQtip('#localEncoding','Each letter encoding as a bipolar local array. +1 in one location and  -1 in all others.');
+    	addQtip('#distributedEncoding','Each letter numbered and represented by corresponding 8bit binary array of 1s and -1s. e.g. if there were 12 different letters, the 12th letter would be <br>-1,-1,-1,-1, 1, 1, -1, -1 ');
+		addQtip('#numberSubjects','How many times do we run the full simulation and test?<br><em>Default: 1</em>');
+		addQtip('#temperature','What is the slope of the hyperbolic tanget activation function?<br><em>Default: 1</em>');
+		addQtip('#reset','Reset the network. Reinitialise weights and move to start of training set.');
+		addQtip('#stepPlus1','Move one step further through the training data.');
+		addQtip('#stepPlus1Percent','Move one percent further through the training data.');
+		addQtip('#stepPlus10','Move ten steps further through the training data.');
+		addQtip('#stepPlus10Percent','Move ten percent further through the training data.');
+		addQtip('#calculate','Run to the end of one full pass through the training set.');
+		addQtip('#batchRun','For each subject we create a new untrained network by randomly initialising a new set of weights matrices. We train this network on the training data and then test with each of the word, part-word and non-word stimuli. Progress is shown below and mean results are plotted graphically.');
 	});
 
 	//add click events to the  buttons
@@ -369,11 +307,12 @@
 				var opt = updateOptions;
 				if(opt.reloadDataSet){
 					//fill the track learning items
-				    $("#trackingFlag").val(data.tracklearning.trackingFlag);
-				    $("#trackingBigrams").val(data.tracklearning.trackingBigram.join(","));
+				    $("#trackingFlag").attr('checked', data.tracklearning.trackingFlag);
+				    $("#trackingTestWords").val(data.tracklearning.trackingBigram.join(","));
 				    $("#trackingInterval").val(data.tracklearning.trackingInterval);			    
 				    //fill in the trainingData
 				    $("#trainingData").val(data.trainingdata.sentence.join('\n'));
+				    $("#simulationDetails").html(data.explanation.text + '<br><em>' + data.explanation.ref +"</em>");
 				}
 				if(opt.reloadTestItems){
 				    //fill in the test items
@@ -395,7 +334,7 @@
 		var temp = $('#simulationSelect').val().split(".");
 		var simulationNumber=temp[0] -1;
 //		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","giroux","frank1","frank3","brent","notavailable","notavailable","french","kirkham"];
-		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","notavailable","notavailable","notavailable","notavailable","notavailable","notavailable","french","kirkham"];
+		var simulationName =["saffran","aslin","perruchetfwd","perruchetbkwd","girouxandrey","notavailable","notavailable","notavailable","notavailable","notavailable","french","kirkham"];
 		updateFromServer(simulationName[simulationNumber]);	
 		initialiseNetwork();
 	}
@@ -437,7 +376,8 @@
 		$('#chartInput2').empty();  
 		$('#chartHidden').empty();  
  		$('#chartOutput1').empty();  
-		$('#chartOutput2').empty();  
+		$('#chartOutput2').empty(); 
+		$('#Delta').html(""); 
 	}
 	function resetParameters(){
 		reloadFromServer({reloadParameters:true});
@@ -485,8 +425,8 @@
         var loggingLevel = 1;
         
         //do we track learning as we go along?
-        TRACX.setTrackingData({flag:$("#trackingFlag").val(),
-        						bigrams:$("#trackingBigrams").val(),
+        TRACX.setTrackingData({flag:$("#trackingFlag").is(':checked'),
+        						testWords:$("#trackingTestWords").val(),
         						interval:$("#trackingInterval").val()        	
       						});		
         
@@ -501,6 +441,16 @@
 		gridWeights("Hidden to Output","#WeightsHid2Out",TRACX.getWeightsHid2Out().elements);
 		$('#currentStep').html("<em style='font-size:3ex;'>Training Step: 0</em>");
    	}
+   	
+   	function handleBatchCalculate()
+	{
+		var numberSubjects= parseFloat($('#numberSubjects').val());
+		
+		if (numberSubjects==1)
+			handleCalculate(-1000);
+		else
+			handleMultiSubjectCalculate(numberSubjects);
+	}
         
 	//function to run when calculate button is pressed
 	function handleCalculate(steps) {
@@ -601,6 +551,13 @@
     // }    
     }
 
+	function handleMultiSubjectCalculate(subjects)
+	{
+		handleCalculate(-1000);
+		if (subjects <= 1)
+			return;
+		setTimeout( 'handleMultiSubjectCalculate(' + (subjects-1) + ')', 250);
+	}
  	      
 	function plotBarGraph(WordErrorScores){
 	try{
@@ -656,7 +613,7 @@
 		}
 	    var plot2 = $.jqplot ('chartTrackLearning',seriesdata, {
 			  // Give the plot a title.
-			  title: 'Bigram error over time',
+			  title: 'Test words mean error over time',
 			  axesDefaults: { labelRenderer: $.jqplot.CanvasAxisLabelRenderer },
  	          legend: { show: true, placement: 'outsideGrid'},
 			  series:serieslabels,
@@ -783,6 +740,7 @@
 	}
 	function gridSetup(gridName,gridCaption,colModel){
 	  	//then set up grid itself
+    	$(gridName).jqGrid('GridUnload');
     	$(gridName).jqGrid({
 			datatype: "local",
 			height: 250,
@@ -791,7 +749,7 @@
 		   	multiselect: false,
 		   	caption: gridCaption
 		});
-		$(gridName).jqGrid('clearGridData');
+		// $(gridName).jqGrid('clearGridData');
 	}
 	</script>
 

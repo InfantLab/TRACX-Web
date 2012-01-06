@@ -16,8 +16,8 @@
  */
 var TRACX = (function () { 
     var API = {}; //a variable to hold public interface for this module
-    API.Version = '0.1.7'; //version number for 
-    API.VersionDate = "13-December-2011";
+    API.Version = '0.1.8'; //version number for 
+    API.VersionDate = "6-January-2012";
     
     //private variables
     var trainingData,userEncodings, inputEncodings,
@@ -25,7 +25,7 @@ var TRACX = (function () {
    		weightsInputToHidden, weightsHiddenToOutput, //weight matrices
    		OLD_deltaWeightsInputToHidden, OLD_deltaWeightsHiddenToOutput,  //old matrices for momentum calc
    		testWords, testPartWords, testNonWords, //test items
-    	batchMode,trackingFlag, trackingBigrams, trackingInterval, trackingSteps, trackingResults; //tracking Learning
+    	batchMode,trackingFlag, trackingTestWords, trackingInterval, trackingSteps, trackingResults; //tracking Learning
    	
     //default parameters
     var params = {
@@ -41,7 +41,8 @@ var TRACX = (function () {
 		numberSubjects: 1,
 		inputEncoding:'local',  // local,binary,user
 		deltaRule:'max',		//max,rms
-		testErrorType:'final'  //final,average,conditional
+		// testErrorType:'final'  //final,average,conditional
+		testErrorType:'conditional'  //final,average,conditional
 	};
     
     //variables for stepping through
@@ -90,17 +91,17 @@ var TRACX = (function () {
    	API.setTrackingData = function(data){
    		trackingFlag = data.flag;
    		//have to tidy up the bigrams strings a bit
-   		trackingBigrams = [];
-   		var temp = data.bigrams.split(',');
+   		trackingTestWords = [];
+   		var temp = data.testWords.split(',');
    		for (x in temp){
-   			if (temp[x].trim().length===2){
-				trackingBigrams[temp[x].trim()] = temp[x].trim();
+   			if (temp[x].trim().length>=2){
+				trackingTestWords[temp[x].trim()] = temp[x].trim();
 			}
 		}
    		trackingInterval = data.interval;
    	}
    	API.getTrackingData = function(){
-		return {flag:trackingFlag,bigrams:trackingBigrams.join(','),interval:trackingInterval};
+		return {flag:trackingFlag,bigrams:trackingTestWords.join(','),interval:trackingInterval};
    	}
    	API.getCurrentStep = function(){
    		return currentStep;
@@ -130,8 +131,7 @@ var TRACX = (function () {
 
 	/**********************************************
 	 **** Some helper functions					*** 
-	 **********************************************/
-   
+	 **********************************************/ 
     function isNumber(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
 	}
@@ -440,9 +440,9 @@ var TRACX = (function () {
 					trackingSteps.push(currentStep);
 					//if tracking turned on we test the network 
 					//at fixed intervals with a set of test bigrams
-					for(x in trackingBigrams){
-						var ret = API.testString(trackingBigrams[x]);
-						trackingResults[trackingBigrams[x]].push([currentStep, ret.testError]);
+					for(x in trackingTestWords){
+						var ret = API.testString(trackingTestWords[x]);
+						trackingResults[trackingTestWords[x]].push([currentStep, ret.testError]);
 					}
 				}
 				currentStep++;			
@@ -548,6 +548,7 @@ var TRACX = (function () {
    		}else{
    			params.randomSeed =  Math.seedrandom();
    		}
+   		progressCallback(1,"Random seed used: " + params.randomSeed + "<br/>");
    		startSimulation = new Date();
   		currentStep = 0;
   		inputLength = trainingData.length -1;
@@ -568,8 +569,8 @@ var TRACX = (function () {
     		//initialise stacked array to store tracking data
     		trackingResults = [];
     		trackingSteps = [];
-        	for(x in trackingBigrams){
-    			trackingResults[trackingBigrams[x].trim()] = [];
+        	for(x in trackingTestWords){
+    			trackingResults[trackingTestWords[x].trim()] = [];
 	        }
 	    }
 
@@ -648,7 +649,8 @@ var TRACX = (function () {
   			//initialize things
   			startSimulation = new Date();
 	  		if (progressCallback){
-	  			progressCallback(1,"Simulation started: " + startSimulation.toLocaleTimeString() + "<br/>");
+	  			progressCallback(1,"Random seed used: " + params.randomSeed + "<br/>");
+   				progressCallback(1,"Simulation started: " + startSimulation.toLocaleTimeString() + "<br/>");
 	  		}
 	  		lastDelta = 500;  // some very big delta to start with
 	  		currentStep = 0;
@@ -657,17 +659,13 @@ var TRACX = (function () {
   			if (progressCallback){
   				progressCallback(1, "Stepping through once,");
 				progressCallback(0,"Stepping through once <br/>");
-				// progressCallback(0,'Weight Matrices<br/>Input to Hidden<br/>');
-				// progressCallback(0, weightsInputToHidden.inspect());
-				// progressCallback(0,'<br/>Hidden to Output<br/>');
-				// progressCallback(0,weightsHiddenToOutput.inspect());
 			}	
 	        if (trackingFlag){
 				//initialise stacked array to store tracking data
 	    		trackingResults = [];
 	    		trackingSteps = [];
-	        	for(x in trackingBigrams){
-	    			trackingResults[trackingBigrams[x].trim()] = [];
+	        	for(x in trackingTestWords){
+	    			trackingResults[trackingTestWords[x].trim()] = [];
 		        }
 		    }
   		}
