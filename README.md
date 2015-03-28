@@ -72,6 +72,11 @@ That's it.
 Any questions, bugs or comments, please post them on github.com or email them to c.addyman@bbk.ac.uk
 
 
+To cite this code:
+
+[![DOI](https://zenodo.org/badge/3891/YourBrain/TRACX-Web.svg)](http://dx.doi.org/10.5281/zenodo.16436)
+
+
 
 
 
