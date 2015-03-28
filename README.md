@@ -1,4 +1,4 @@
-# Truncated Recursive Autoassociative Chunk eXtractor
+# Truncated Recursive Autoassociative Chunk eXtractor (TRACX)
 
 TRACX is a new model of sequence learning. It is a connectionist autoassociator model which fits a wide range of phenomena from the infant statistical learning and adult implicit learning literature. TRACX outperforms PARSER (Perruchet & Vintner, 1998) and the simple recurrent network (SRN, Cleeremans & McClelland, 1991) in matching human sequence segmentation on existing data. This simulator is written entirely in Javascript and runs locally in your browser. A short summary of the algorithm can be found here and more details of the model can be found in:
 
