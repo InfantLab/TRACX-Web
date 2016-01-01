@@ -36,20 +36,20 @@ http://craigsworks.com/projects/qtip/
 1. Simulator Only
 ==================
 If you just wish to use the simulator, you can try it online at:
-http://leadserv.u-bourgogne.fr/~tracx/
+http://onemonkey.org/tracx/
 
 
 2. Local debugging
 ==================
 
 If you just wish to use the simulator _and_ step through the code. You can use the current live code from:
-http://leadserv.u-bourgogne.fr/~tracx/
+http://onemonkey.org/tracx/
 
 Together with an in browser debug engine. We recommend Firebug:
 https://getfirebug.com/
 
 We have a beginners guide to debugging available at:
-http://leadserv.u-bourgogne.fr/~tracx/debughelp.html
+http://onemonkey.org/tracx//debughelp.html
 
 
 3. Adapting and modifying the TRACX code yourself
@@ -69,7 +69,7 @@ http://www.apachefriends.org/en/xampp.html
 
 That's it.
 
-Any questions, bugs or comments, please post them on github.com or email them to c.addyman@bbk.ac.uk
+Any questions, bugs or comments, please post them on github.com or email them to c.addyman@gold.ac.uk
 
 
 To cite this code:
